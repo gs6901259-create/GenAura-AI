@@ -127,10 +127,48 @@ body {
   border: 1px solid rgba(71, 85, 105, 0.4);
 }
 
+/* Glassmorphism System Components */
+.glass-card {
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(71, 85, 105, 0.35);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+  color: var(--color-navy-50);
+}
+
+.glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(71, 85, 105, 0.5);
+  box-shadow: 0 10px 30px -4px rgba(0, 0, 0, 0.45);
+  color: var(--color-navy-50);
+}
+
+.glass-input {
+  background: rgba(10, 15, 30, 0.8);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  color: var(--color-navy-50);
+  transition: all 0.15s ease-in-out;
+}
+.glass-input:focus {
+  border-color: var(--color-violet-500);
+  outline: none;
+  box-shadow: 0 0 0 1px var(--color-violet-500);
+}
+
+.glass-dropdown {
+  background: rgba(15, 23, 42, 0.95);
+  border: 1px solid rgba(51, 65, 85, 0.7);
+  color: var(--color-navy-200);
+}
+
 /* ================================================================
    Light Theme Token Overrides
    ================================================================ */
 html.light {
+  /* Navy variables remapping for light mode */
   --color-navy-950: #f8fafc;
   --color-navy-900: #ffffff;
   --color-navy-800: #f1f5f9;
@@ -142,6 +180,63 @@ html.light {
   --color-navy-200: #1e293b;
   --color-navy-100: #0f172a;
   --color-navy-50:  #020617;
+
+  /* Slate variables remapping for collaboration & dashboard components */
+  --color-slate-950: #ffffff;
+  --color-slate-900: #f8fafc;
+  --color-slate-850: #f1f5f9;
+  --color-slate-800: #e2e8f0;
+  --color-slate-700: #cbd5e1;
+  --color-slate-600: #94a3b8;
+  --color-slate-500: #64748b;
+  --color-slate-400: #475569;
+  --color-slate-300: #334155;
+  --color-slate-200: #1e293b;
+  --color-slate-100: #0f172a;
+  --color-slate-50:  #020617;
+
+  /* Accent highlights adapted to high-contrast pastel badges in light mode */
+  --color-purple-950: #f5f3ff;
+  --color-purple-900: #ede9fe;
+  --color-purple-800: #ddd6fe;
+  --color-purple-700: #c4b5fd;
+  --color-purple-600: #7c3aed;
+  --color-purple-400: #6d28d9;
+  --color-purple-300: #5b21b6;
+
+  --color-amber-950: #fffbeb;
+  --color-amber-900: #fef3c7;
+  --color-amber-800: #fde68a;
+  --color-amber-700: #fcd34d;
+  --color-amber-400: #b45309;
+  --color-amber-300: #92400e;
+
+  --color-emerald-950: #ecfdf5;
+  --color-emerald-900: #d1fae5;
+  --color-emerald-800: #a7f3d0;
+  --color-emerald-700: #6ee7b7;
+  --color-emerald-400: #047857;
+  --color-emerald-300: #065f46;
+
+  --color-blue-950: #eff6ff;
+  --color-blue-900: #dbeafe;
+  --color-blue-800: #bfdbfe;
+  --color-blue-700: #93c5fd;
+  --color-blue-400: #1d4ed8;
+  --color-blue-300: #1e40af;
+
+  --color-teal-950: #f0fdf4;
+  --color-teal-900: #ccfbf1;
+  --color-teal-800: #99f6e4;
+  --color-teal-400: #0f766e;
+  --color-teal-300: #115e59;
+
+  --color-rose-950: #fff1f2;
+  --color-rose-900: #ffe4e6;
+  --color-rose-800: #fecdd3;
+  --color-rose-700: #fda4af;
+  --color-rose-400: #be123c;
+  --color-rose-300: #9f1239;
 
   --color-brand-bg:      #f8fafc;
   --color-brand-surface: #ffffff;
@@ -161,6 +256,44 @@ html.light .glass {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+/* Light Mode Glassmorphism Overrides */
+html.light .glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  color: #0f172a;
+}
+
+html.light .glass-panel {
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid rgba(226, 232, 240, 1);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
+  color: #0f172a;
+}
+
+html.light .glass-input {
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  color: #0f172a;
+}
+html.light .glass-input::placeholder {
+  color: #94a3b8;
+}
+html.light .glass-input:focus {
+  border-color: var(--color-violet-600);
+  box-shadow: 0 0 0 1px var(--color-violet-600);
+}
+
+html.light .glass-dropdown {
+  background: #ffffff;
+  border: 1px solid rgba(203, 213, 225, 0.9);
+  color: #0f172a;
 }
 
 html.light ::-webkit-scrollbar-track { background: #f1f5f9; }

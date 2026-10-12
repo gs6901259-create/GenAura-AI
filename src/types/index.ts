@@ -423,6 +423,12 @@ export interface UserSettings {
     autoSuggestions: boolean;
     storeConversations: boolean;
     preferLiveModel: boolean;
+    voiceEnabled?: boolean;
+    autoSpeakReplies?: boolean;
+    autoListenNextTurn?: boolean;
+    speechRate?: number;
+    speechPitch?: number;
+    selectedVoice?: string;
   };
 }
 

@@ -28,6 +28,8 @@ import {
   Laptop,
   CheckCircle2,
   ExternalLink,
+  Mic,
+  Volume2,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { demoService } from '@/services/demoService';
@@ -1211,6 +1213,69 @@ export function SettingsPage() {
                     className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
                   />
                 </label>
+
+                {/* Aura Voice Preferences */}
+                <div className="p-4 rounded-xl bg-navy-950 border border-navy-800 space-y-3.5">
+                  <div className="flex items-center gap-2">
+                    <Mic size={16} className="text-violet-400" />
+                    <h4 className="text-xs font-bold text-navy-200">Aura Hands-Free Voice Preferences</h4>
+                  </div>
+
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                      <h5 className="text-xs font-semibold text-navy-200">Auto-Speak AI Responses</h5>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Read aloud Aura Assistant answers using browser text-to-speech synthesis.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={aiForm.autoSpeakReplies ?? true}
+                      onChange={(e) =>
+                        setAiForm({ ...aiForm, autoSpeakReplies: e.target.checked })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between cursor-pointer">
+                    <div>
+                      <h5 className="text-xs font-semibold text-navy-200">Auto-Listen for Next Turn</h5>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Automatically reactivate microphone after Aura finishes speaking for seamless dialogue.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={aiForm.autoListenNextTurn ?? true}
+                      onChange={(e) =>
+                        setAiForm({ ...aiForm, autoListenNextTurn: e.target.checked })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+
+                  <div className="flex items-center justify-between pt-1">
+                    <div>
+                      <h5 className="text-xs font-semibold text-navy-200">Speech Speed Rate</h5>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Control how quickly Aura speaks voice responses.
+                      </p>
+                    </div>
+                    <select
+                      value={aiForm.speechRate ?? 1.0}
+                      onChange={(e) =>
+                        setAiForm({ ...aiForm, speechRate: parseFloat(e.target.value) })
+                      }
+                      className="px-2.5 py-1 bg-navy-900 border border-navy-700 rounded-lg text-xs text-navy-200 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="0.8">0.8x (Slower)</option>
+                      <option value="1.0">1.0x (Normal)</option>
+                      <option value="1.2">1.2x (Fast)</option>
+                      <option value="1.5">1.5x (Speed)</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               {/* Clear History Shortcut */}

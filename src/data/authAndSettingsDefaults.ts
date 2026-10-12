@@ -111,6 +111,11 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
     autoSuggestions: true,
     storeConversations: true,
     preferLiveModel: true,
+    voiceEnabled: true,
+    autoSpeakReplies: true,
+    autoListenNextTurn: true,
+    speechRate: 1.0,
+    speechPitch: 1.0,
   },
 };
 

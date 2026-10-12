@@ -49,10 +49,10 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
   }
 
   return (
-    <div className="overflow-hidden rounded-2xl border border-slate-800 bg-slate-900/60 backdrop-blur-md shadow-xl">
+    <div className="glass-card overflow-hidden rounded-2xl shadow-xl">
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs text-slate-300">
-          <thead className="border-b border-slate-800 bg-slate-950/70 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+        <table className="w-full text-left text-xs text-navy-200">
+          <thead className="border-b border-navy-700/60 bg-navy-950/70 text-[11px] font-semibold uppercase tracking-wider text-navy-400">
             <tr>
               <th className="px-5 py-3.5">Creator & Handle</th>
               <th className="px-5 py-3.5">Project & Linked Brief</th>
@@ -63,7 +63,7 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-800/80">
+          <tbody className="divide-y divide-navy-700/60">
             {projects.map((p) => {
               const creator = creatorMap.get(p.creatorId);
               const brief = briefMap.get(p.briefId);
@@ -71,7 +71,7 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
               return (
                 <tr
                   key={p.id}
-                  className="group transition-colors hover:bg-slate-850/80"
+                  className="group transition-colors hover:bg-navy-800/40"
                 >
                   {/* Creator */}
                   <td className="px-5 py-4 whitespace-nowrap">
@@ -79,13 +79,13 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
                       <img
                         src={creator?.avatarUrl}
                         alt={creator?.name}
-                        className="h-9 w-9 rounded-full object-cover ring-1 ring-slate-700"
+                        className="h-9 w-9 rounded-full object-cover ring-1 ring-navy-600"
                       />
                       <div>
-                        <div className="font-semibold text-white">
+                        <div className="font-bold text-navy-50">
                           {creator?.name || 'Unknown Creator'}
                         </div>
-                        <div className="text-[11px] text-slate-400">
+                        <div className="text-[11px] text-navy-400">
                           {creator?.handle}
                         </div>
                       </div>
@@ -94,7 +94,7 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
 
                   {/* Project & Brief */}
                   <td className="px-5 py-4 max-w-xs">
-                    <div className="font-medium text-slate-200 line-clamp-1 group-hover:text-purple-300 transition-colors">
+                    <div className="font-medium text-navy-100 line-clamp-1 group-hover:text-purple-400 transition-colors">
                       {p.title}
                     </div>
                     {brief && (
@@ -107,14 +107,14 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
                   {/* Deliverables */}
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">
-                      <span className="font-medium text-slate-200">
+                      <span className="font-medium text-navy-100">
                         {p.deliverables.length} Deliverable{p.deliverables.length > 1 ? 's' : ''}
                       </span>
-                      <div className="flex items-center gap-1.5 text-[10px] text-slate-400">
+                      <div className="flex items-center gap-1.5 text-[10px] text-navy-400">
                         {p.deliverables.map((d) => (
                           <span
                             key={d.id}
-                            className="rounded-md bg-slate-800 px-1.5 py-0.5 text-slate-300 font-mono"
+                            className="rounded-md bg-navy-800 px-1.5 py-0.5 text-navy-300 font-mono"
                           >
                             {d.platform}
                           </span>
@@ -127,11 +127,11 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
                   <td className="px-5 py-4 whitespace-nowrap">
                     <div className="font-bold text-emerald-400">
                       ${p.compensation.amount.toLocaleString()}{' '}
-                      <span className="text-[10px] font-normal text-slate-400">
+                      <span className="text-[10px] font-normal text-navy-400">
                         {p.compensation.currency}
                       </span>
                     </div>
-                    <div className="text-[10px] text-slate-400 capitalize">
+                    <div className="text-[10px] text-navy-400 capitalize">
                       {p.compensation.type}
                     </div>
                   </td>
@@ -142,12 +142,12 @@ export const CollaborationTable: React.FC<CollaborationTableProps> = ({
                   </td>
 
                   {/* Timeline */}
-                  <td className="px-5 py-4 whitespace-nowrap text-[11px] text-slate-400">
-                    <div className="flex items-center gap-1 text-slate-300">
-                      <Calendar className="h-3 w-3 text-slate-500" />
+                  <td className="px-5 py-4 whitespace-nowrap text-[11px] text-navy-400">
+                    <div className="flex items-center gap-1 text-navy-200">
+                      <Calendar className="h-3 w-3 text-navy-500" />
                       Draft: {new Date(p.targetDraftDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </div>
-                    <div className="text-[10px] text-slate-500">
+                    <div className="text-[10px] text-navy-500">
                       Publish: {new Date(p.targetPublishDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                     </div>
                   </td>
