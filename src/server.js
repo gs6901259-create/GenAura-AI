@@ -157,6 +157,18 @@ const server = http.createServer(async (req, res) => {
     return res.end(csv);
   }
 
+  if (pathname === '/api/assistant' && req.method === 'POST') {
+    const { message } = await readBody(req);
+    if (!message) {
+      return sendJson(res, 400, { error: 'Message is required' });
+    }
+    return sendJson(res, 200, {
+      text: `Hello from GenAura AI backend. Your query regarding "${message}" has been processed.`,
+      model: 'GenAura Server AI Engine',
+      isLive: false,
+    });
+  }
+
   if (pathname === '/api/reset' && req.method === 'POST') {
     persistence.resetToDefaults();
     return sendJson(res, 200, { success: true });

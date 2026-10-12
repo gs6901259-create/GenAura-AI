@@ -339,6 +339,102 @@ export interface AppStore {
   currentPersona?:   UserPersona;
   currentCreatorId?: CreatorId;
   activeBriefId?:    BriefId | null;
+  authUser?:         AuthUser | null;
+  isAuthenticated?:  boolean;
+  theme?:            ThemeMode;
+  userSettings?:     UserSettings;
+  notifications?:    AppNotification[];
+  chatMessages?:     ChatMessage[];
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Theme, Auth & Settings Contracts
+// ────────────────────────────────────────────────────────────────────────────
+export type ThemeMode = 'light' | 'dark' | 'system';
+
+export interface AuthUser {
+  id: string;
+  name: string;
+  email: string;
+  username: string;
+  role: UserPersona;
+  avatarUrl: string;
+  bio?: string;
+  location?: string;
+  languages?: string[];
+  createdAt: string;
+  isDemoAccount?: boolean;
+}
+
+export interface UserSettings {
+  profile: {
+    displayName: string;
+    username: string;
+    avatarUrl: string;
+    bio: string;
+    location: string;
+    languages: string[];
+    hourlyRate?: number;
+    website?: string;
+  };
+  account: {
+    email: string;
+    twoFactorEnabled: boolean;
+    activeSessions: {
+      id: string;
+      device: string;
+      location: string;
+      lastActive: string;
+      isCurrent: boolean;
+    }[];
+  };
+  appearance: {
+    theme: ThemeMode;
+    reduceMotion: boolean;
+    compactDensity: boolean;
+  };
+  notifications: {
+    collaborationRequests: boolean;
+    verificationUpdates: boolean;
+    campaignUpdates: boolean;
+    productAnnouncements: boolean;
+    emailChannel: boolean;
+    inAppChannel: boolean;
+  };
+  privacy: {
+    profileVisibility: 'public' | 'shortlist-only' | 'private';
+    discoverabilityEnabled: boolean;
+    searchEngineIndexing: boolean;
+  };
+  aiPreferences: {
+    responseLanguage: string;
+    autoSuggestions: boolean;
+    storeConversations: boolean;
+    preferLiveModel: boolean;
+  };
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'assistant' | 'system';
+  text: string;
+  timestamp: string;
+  actionLink?: {
+    label: string;
+    to: string;
+  };
+  isError?: boolean;
+  isStreaming?: boolean;
+}
+
+export interface AppNotification {
+  id: string;
+  title: string;
+  message: string;
+  type: 'collaboration' | 'verification' | 'brief' | 'system';
+  timestamp: string;
+  read: boolean;
+  linkTo?: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -363,6 +459,8 @@ export interface DashboardStats {
  */
 export const ROUTES = {
   dashboard:        '/',
+  welcome:          '/welcome',
+  login:            '/login',
   creators:         '/creators',
   creatorDetail:    '/creators/:id',
   discovery:        '/discovery',
@@ -376,7 +474,10 @@ export const ROUTES = {
   briefEdit:        '/briefs/:id/edit',
   projects:         '/projects',
   projectDetail:    '/projects/:id',
+  assistant:        '/assistant',
+  notifications:    '/notifications',
   settings:         '/settings',
+  help:             '/help',
 } as const;
 
 export type RoutePath = typeof ROUTES[keyof typeof ROUTES];

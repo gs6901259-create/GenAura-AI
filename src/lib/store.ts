@@ -17,6 +17,11 @@ import {
   ProjectRequest, ProjectId,
   DashboardStats,
   UserPersona,
+  ThemeMode,
+  AuthUser,
+  UserSettings,
+  ChatMessage,
+  AppNotification,
 } from '@/types';
 import {
   SEED_CREATORS,
@@ -25,6 +30,13 @@ import {
   SEED_SHORTLIST,
   SEED_PROJECTS,
 } from '@/data/seed';
+import {
+  DEFAULT_DEMO_USERS,
+  DEFAULT_USER_SETTINGS,
+  SEED_NOTIFICATIONS,
+  INITIAL_ASSISTANT_MESSAGES,
+} from '@/data/authAndSettingsDefaults';
+import { applyTheme } from '@/lib/theme';
 import { verificationEngine } from '@/services/verificationEngine';
 
 // Enhance initial seed creators with verification statuses
@@ -145,6 +157,27 @@ interface AppStoreActions {
   updateProject: (id: ProjectId, patch: Partial<ProjectRequest>) => void;
   removeProject: (id: ProjectId) => void;
 
+  // Theme
+  setTheme: (theme: ThemeMode) => void;
+
+  // Authentication
+  login:          (user: AuthUser) => void;
+  logout:         () => void;
+  updateAuthUser: (patch: Partial<AuthUser>) => void;
+
+  // User Settings
+  updateUserSettings: (patch: Partial<UserSettings>) => void;
+  resetUserSettings:  () => void;
+
+  // Notifications
+  addNotification:          (n: AppNotification) => void;
+  markNotificationRead:     (id: string) => void;
+  markAllNotificationsRead: () => void;
+
+  // AI Assistant Chat
+  addChatMessage:    (m: ChatMessage) => void;
+  clearChatMessages: () => void;
+
   // Selectors
   getDashboardStats:      () => DashboardStats;
   getCreatorById:         (id: CreatorId) => Creator | undefined;
@@ -170,9 +203,64 @@ export const useAppStore = create<FullStore>()(
       currentPersona:    'brand',
       currentCreatorId:  asCreatorId('c1'),
       activeBriefId:     asBriefId('b1'),
+      theme:             'dark',
+      authUser:          DEFAULT_DEMO_USERS.brand,
+      isAuthenticated:   true,
+      userSettings:      DEFAULT_USER_SETTINGS,
+      notifications:     SEED_NOTIFICATIONS,
+      chatMessages:      INITIAL_ASSISTANT_MESSAGES,
+
+      // ── Theme ──
+      setTheme: (theme) => {
+        applyTheme(theme);
+        set({ theme });
+      },
+
+      // ── Authentication ──
+      login: (user) => set({ authUser: user, isAuthenticated: true, currentPersona: user.role }),
+      logout: () => set({ authUser: null, isAuthenticated: false }),
+      updateAuthUser: (patch) =>
+        set((s) => ({
+          authUser: s.authUser ? { ...s.authUser, ...patch } : null,
+        })),
+
+      // ── User Settings ──
+      updateUserSettings: (patch) =>
+        set((s) => ({
+          userSettings: s.userSettings
+            ? { ...s.userSettings, ...patch }
+            : { ...DEFAULT_USER_SETTINGS, ...patch },
+        })),
+      resetUserSettings: () => set({ userSettings: DEFAULT_USER_SETTINGS }),
+
+      // ── Notifications ──
+      addNotification: (n) =>
+        set((s) => ({ notifications: [n, ...(s.notifications || [])] })),
+      markNotificationRead: (id) =>
+        set((s) => ({
+          notifications: (s.notifications || []).map((n) =>
+            n.id === id ? { ...n, read: true } : n
+          ),
+        })),
+      markAllNotificationsRead: () =>
+        set((s) => ({
+          notifications: (s.notifications || []).map((n) => ({ ...n, read: true })),
+        })),
+
+      // ── AI Assistant ──
+      addChatMessage: (m) =>
+        set((s) => ({ chatMessages: [...(s.chatMessages || []), m] })),
+      clearChatMessages: () =>
+        set({ chatMessages: INITIAL_ASSISTANT_MESSAGES }),
 
       // ── Persona & Context ──
-      setPersona: (p) => set({ currentPersona: p }),
+      setPersona: (p) => {
+        const demoUser = DEFAULT_DEMO_USERS[p];
+        set((s) => ({
+          currentPersona: p,
+          authUser: s.authUser?.isDemoAccount ? demoUser : s.authUser,
+        }));
+      },
       setCurrentCreatorId: (id) => set({ currentCreatorId: id }),
       setActiveBriefId: (id) => set({ activeBriefId: id }),
 

@@ -126,3 +126,89 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(71, 85, 105, 0.4);
 }
+
+/* ================================================================
+   Light Theme Token Overrides
+   ================================================================ */
+html.light {
+  --color-navy-950: #f8fafc;
+  --color-navy-900: #ffffff;
+  --color-navy-800: #f1f5f9;
+  --color-navy-700: #e2e8f0;
+  --color-navy-600: #cbd5e1;
+  --color-navy-500: #64748b;
+  --color-navy-400: #475569;
+  --color-navy-300: #334155;
+  --color-navy-200: #1e293b;
+  --color-navy-100: #0f172a;
+  --color-navy-50:  #020617;
+
+  --color-brand-bg:      #f8fafc;
+  --color-brand-surface: #ffffff;
+  --color-brand-border:  #e2e8f0;
+  --color-brand-text:    #0f172a;
+  --color-brand-muted:   #64748b;
+  --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+html.light body {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.light .glass {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+html.light ::-webkit-scrollbar-track { background: #f1f5f9; }
+html.light ::-webkit-scrollbar-thumb { background: #cbd5e1; }
+html.light ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Theme transition */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ================================================================
+   Animations: Glowing Orbs, Particles, and Shimmer
+   ================================================================ */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) scale(1); }
+  50% { transform: translateY(-20px) scale(1.04); }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes shimmerMotion {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-float-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: floatSlow 10s ease-in-out 3s infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+

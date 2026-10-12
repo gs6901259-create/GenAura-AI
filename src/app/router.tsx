@@ -1,3 +1,9 @@
+/**
+ * GenAura AI — Production Application Router
+ * ===========================================
+ * Registers all application routes including Animated Welcome & Login,
+ * Aura Assistant, Notifications, Help & Support, and core marketplace features.
+ */
 import { createBrowserRouter, RouterProvider, Navigate, useRouteError, isRouteErrorResponse } from 'react-router-dom';
 import { AppLayout } from './AppLayout';
 import { DashboardPage } from '@/features/dashboard/DashboardPage';
@@ -8,8 +14,13 @@ import { ProjectsPage, ProjectDetailPage } from '@/features/projects';
 import { CreatorStudioPage } from '@/features/studio/CreatorStudioPage';
 import { AdminVerificationQueue } from '@/features/admin/AdminVerificationQueue';
 import { SettingsPage } from '@/features/settings';
+import { WelcomeLoginPage } from '@/features/auth/WelcomeLoginPage';
+import { AuraAssistantPage } from '@/features/assistant/AuraAssistantPage';
+import { NotificationsPage } from '@/features/notifications/NotificationsPage';
+import { HelpPage } from '@/features/help/HelpPage';
 import { Button } from '@/components/ui';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { useAppStore } from '@/lib/store';
 
 function RouteErrorBoundary() {
   const error = useRouteError();
@@ -38,19 +49,35 @@ function RouteErrorBoundary() {
   );
 }
 
-/**
- * Application router — owned by Member 1 (Team Lead).
- * Feature owners: do NOT add routes here directly.
- * Open a PR with your route requirements and the Team Lead will integrate.
- */
+function DashboardOrWelcome() {
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
+  if (!isAuthenticated) {
+    return <Navigate to="/welcome" replace />;
+  }
+  return <DashboardPage />;
+}
+
 const router = createBrowserRouter([
+  // Full-screen Welcome and Authentication Portal
+  {
+    path: '/welcome',
+    element: <WelcomeLoginPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: '/login',
+    element: <WelcomeLoginPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+
+  // Main Application Shell
   {
     path: '/',
     element: <AppLayout />,
     errorElement: <RouteErrorBoundary />,
     children: [
-      // Dashboard
-      { index: true, element: <DashboardPage /> },
+      // Dashboard (or redirect to welcome if unauthenticated)
+      { index: true, element: <DashboardOrWelcome /> },
 
       // Creators (Member 2)
       { path: 'creators',     element: <CreatorsPage /> },
@@ -75,8 +102,17 @@ const router = createBrowserRouter([
       { path: 'projects',     element: <ProjectsPage /> },
       { path: 'projects/:id', element: <ProjectDetailPage /> },
 
+      // Aura AI Assistant
+      { path: 'assistant', element: <AuraAssistantPage /> },
+
+      // Notifications
+      { path: 'notifications', element: <NotificationsPage /> },
+
       // Settings
       { path: 'settings', element: <SettingsPage /> },
+
+      // Help & Support
+      { path: 'help', element: <HelpPage /> },
 
       // Catch-all
       { path: '*', element: <Navigate to="/" replace /> },
