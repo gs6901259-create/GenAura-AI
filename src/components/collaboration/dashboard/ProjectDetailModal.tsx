@@ -97,9 +97,9 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl border border-slate-800 bg-slate-900 shadow-2xl">
+      <div className="glass-panel relative flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-3xl shadow-2xl">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800/80 bg-slate-950/60 px-6 py-4.5">
+        <div className="flex items-center justify-between border-b border-navy-700/60 bg-navy-950/60 px-6 py-4.5">
           <div className="flex items-center gap-3">
             <img
               src={creator?.avatarUrl}
@@ -108,20 +108,20 @@ export const ProjectDetailModal: React.FC<ProjectDetailModalProps> = ({
             />
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">
+                <h3 className="text-base font-bold text-navy-50">
                   {project.title}
                 </h3>
                 <StatusBadge status={project.status} size="sm" />
               </div>
-              <p className="text-xs text-slate-400">
-                Partner: <span className="font-medium text-slate-200">{creator?.name}</span> ({creator?.handle})
+              <p className="text-xs text-navy-400">
+                Partner: <span className="font-medium text-navy-200">{creator?.name}</span> ({creator?.handle})
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="rounded-xl p-2 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
+            className="rounded-xl p-2 text-navy-400 hover:bg-navy-800 hover:text-navy-100 transition-colors"
           >
             <X className="h-5 w-5" />
           </button>

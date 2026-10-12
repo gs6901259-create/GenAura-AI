@@ -60,8 +60,15 @@ export function Sidebar() {
   ).length;
   const unreadNotifCount = notifications.filter((n) => !n.read).length;
 
-  // The 14 Required Navigation Items
-  const NAV_ITEMS: NavItemDef[] = [
+  const isCreatorHubRoute =
+    location.pathname.startsWith('/studio') ||
+    location.pathname.startsWith('/admin/verification') ||
+    location.pathname.startsWith('/verification');
+
+  const [creatorHubOpen, setCreatorHubOpen] = useState(true);
+
+  // Top General Items
+  const TOP_ITEMS: NavItemDef[] = [
     { id: 'home', label: 'Home', to: ROUTES.dashboard, icon: Home },
     {
       id: 'creators',
@@ -70,6 +77,10 @@ export function Sidebar() {
       icon: Users,
       roles: ['brand', 'admin'],
     },
+  ];
+
+  // Creator Hub Sub-items
+  const CREATOR_HUB_ITEMS: NavItemDef[] = [
     {
       id: 'studio',
       label: 'Creator Studio',
@@ -94,6 +105,10 @@ export function Sidebar() {
       badge: pendingVerificationCount > 0 ? pendingVerificationCount : undefined,
       badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
     },
+  ];
+
+  // Core Marketplace & Workflow Items
+  const WORKFLOW_ITEMS: NavItemDef[] = [
     {
       id: 'briefgen',
       label: 'BriefGen AI',
@@ -138,6 +153,10 @@ export function Sidebar() {
       badge: 'AI',
       badgeColor: 'bg-violet-500 text-white shadow-glow-violet',
     },
+  ];
+
+  // Utility & Support Items
+  const BOTTOM_ITEMS: NavItemDef[] = [
     {
       id: 'notifications',
       label: 'Notifications',
@@ -153,6 +172,69 @@ export function Sidebar() {
   const handleSignOut = () => {
     logout();
     navigate(ROUTES.welcome);
+  };
+
+  const renderNavItem = (item: NavItemDef, isChild = false) => {
+    const isExact = item.to === '/';
+    const cleanTo = item.to.split('?')[0];
+    const hasQuery = item.to.includes('?');
+
+    let isActive = false;
+    if (isExact) {
+      isActive = location.pathname === '/';
+    } else if (hasQuery) {
+      isActive =
+        location.pathname === cleanTo &&
+        location.search.includes(item.to.split('?')[1]);
+    } else {
+      isActive =
+        location.pathname === cleanTo &&
+        (!item.to.startsWith('/studio') || !location.search.includes('tab=coach'));
+    }
+
+    return (
+      <NavLink
+        key={item.id}
+        to={item.to}
+        end={isExact}
+        title={collapsed ? item.label : undefined}
+        className={cn(
+          'group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150',
+          isChild && 'py-1.5 pl-3.5 pr-2.5 text-[11px] rounded-lg',
+          isActive
+            ? 'bg-violet-600/25 text-violet-200 border border-violet-500/40 shadow-sm'
+            : item.isAiProminent
+            ? 'text-cyan-300 hover:bg-cyan-500/10 border border-cyan-500/30'
+            : 'text-navy-400 hover:text-navy-100 hover:bg-navy-800/80 border border-transparent'
+        )}
+      >
+        <div className="flex items-center gap-2.5 min-w-0">
+          <item.icon
+            size={isChild ? 15 : 17}
+            className={cn(
+              'shrink-0 transition-colors',
+              isActive
+                ? 'text-violet-400'
+                : item.isAiProminent
+                ? 'text-cyan-400'
+                : 'text-navy-500 group-hover:text-navy-300'
+            )}
+          />
+          {!collapsed && <span className="truncate">{item.label}</span>}
+        </div>
+
+        {!collapsed && item.badge && (
+          <span
+            className={cn(
+              'px-1.5 py-0.5 rounded text-[10px] font-bold border shrink-0',
+              item.badgeColor || 'bg-navy-800 text-navy-300 border-navy-700'
+            )}
+          >
+            {item.badge}
+          </span>
+        )}
+      </NavLink>
+    );
   };
 
   return (
@@ -192,56 +274,88 @@ export function Sidebar() {
         </div>
 
         {/* Navigation Items List */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1">
-          {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.to === '/'
-                ? location.pathname === '/'
-                : location.pathname.startsWith(item.to.split('?')[0]);
+        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1 scrollbar-none">
+          {/* Top navigation items */}
+          {TOP_ITEMS.map((item) => renderNavItem(item))}
 
-            return (
-              <NavLink
-                key={item.id}
-                to={item.to}
-                end={item.to === '/'}
-                title={collapsed ? item.label : undefined}
+          {/* Unified Creator Hub Group */}
+          {!collapsed ? (
+            <div className="my-1.5 rounded-xl border border-navy-800/80 bg-navy-950/40 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setCreatorHubOpen(!creatorHubOpen)}
                 className={cn(
-                  'group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150',
-                  isActive
-                    ? 'bg-violet-600/25 text-violet-200 border border-violet-500/40 shadow-sm'
-                    : item.isAiProminent
-                    ? 'text-cyan-300 hover:bg-cyan-500/10 border border-cyan-500/30'
-                    : 'text-navy-400 hover:text-navy-100 hover:bg-navy-800/80 border border-transparent'
+                  'w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors',
+                  isCreatorHubRoute
+                    ? 'text-violet-200 bg-violet-600/15'
+                    : 'text-navy-300 hover:text-white hover:bg-navy-800/60'
                 )}
+                aria-expanded={creatorHubOpen}
               >
-                <div className="flex items-center gap-3">
-                  <item.icon
-                    size={17}
+                <div className="flex items-center gap-2.5">
+                  <div
                     className={cn(
-                      'shrink-0 transition-colors',
-                      isActive
-                        ? 'text-violet-400'
-                        : item.isAiProminent
-                        ? 'text-cyan-400'
-                        : 'text-navy-500 group-hover:text-navy-300'
-                    )}
-                  />
-                  {!collapsed && <span className="truncate">{item.label}</span>}
-                </div>
-
-                {!collapsed && item.badge && (
-                  <span
-                    className={cn(
-                      'px-1.5 py-0.5 rounded text-[10px] font-bold border',
-                      item.badgeColor || 'bg-navy-800 text-navy-300 border-navy-700'
+                      'h-6 w-6 rounded-lg flex items-center justify-center text-xs transition-colors',
+                      isCreatorHubRoute
+                        ? 'bg-violet-600 text-white shadow-sm'
+                        : 'bg-navy-800 text-violet-400 border border-navy-700'
                     )}
                   >
-                    {item.badge}
-                  </span>
-                )}
-              </NavLink>
-            );
-          })}
+                    <Palette size={13} />
+                  </div>
+                  <span className="font-bold tracking-tight">Creator Hub</span>
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  {pendingVerificationCount > 0 && (
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      {pendingVerificationCount}
+                    </span>
+                  )}
+                  <ChevronRight
+                    size={13}
+                    className={cn(
+                      'text-navy-400 transition-transform duration-200',
+                      creatorHubOpen && 'rotate-90'
+                    )}
+                  />
+                </div>
+              </button>
+
+              {creatorHubOpen && (
+                <div className="px-2 py-1.5 space-y-0.5 border-t border-navy-800/60 bg-navy-900/50">
+                  {CREATOR_HUB_ITEMS.map((item) => renderNavItem(item, true))}
+                </div>
+              )}
+            </div>
+          ) : (
+            // Collapsed mode for Creator Hub
+            <button
+              type="button"
+              onClick={() => {
+                setCollapsed(false);
+                setCreatorHubOpen(true);
+              }}
+              title="Creator Hub (Studio, AI Coach, Verification)"
+              className={cn(
+                'w-full group flex items-center justify-center rounded-xl p-2.5 transition-all',
+                isCreatorHubRoute
+                  ? 'bg-violet-600/25 text-violet-300 border border-violet-500/40'
+                  : 'text-navy-400 hover:text-white hover:bg-navy-800 border border-transparent'
+              )}
+            >
+              <Palette size={17} className={isCreatorHubRoute ? 'text-violet-400' : 'text-navy-500'} />
+            </button>
+          )}
+
+          {/* Workflow & Marketplace items */}
+          {WORKFLOW_ITEMS.map((item) => renderNavItem(item))}
+
+          {/* Divider */}
+          <div className="my-2 border-t border-navy-800/60" />
+
+          {/* Bottom utilities */}
+          {BOTTOM_ITEMS.map((item) => renderNavItem(item))}
         </div>
 
         {/* User Card & Sign Out Footer */}
@@ -329,6 +443,17 @@ export function MobileNav() {
   const navigate = useNavigate();
   const authUser = useAppStore((s) => s.authUser);
   const logout = useAppStore((s) => s.logout);
+  const creators = useAppStore((s) => s.creators);
+  const currentPersona = useAppStore((s) => s.currentPersona) || 'brand';
+  const [mobileHubOpen, setMobileHubOpen] = useState(true);
+
+  const pendingVerificationCount = creators.filter(
+    (c) => c.verificationStatus === 'submitted'
+  ).length;
+
+  const isCreatorHubRoute =
+    location.pathname.startsWith('/studio') ||
+    location.pathname.startsWith('/admin/verification');
 
   return (
     <>
@@ -384,20 +509,74 @@ export function MobileNav() {
                 <Users size={16} />
                 <span>Discover Creators</span>
               </NavLink>
-              <NavLink
-                to={ROUTES.studio}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
-              >
-                <Palette size={16} />
-                <span>Creator Studio</span>
-              </NavLink>
-              <NavLink
-                to={ROUTES.adminVerification}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
-              >
-                <ShieldCheck size={16} />
-                <span>Creator Verification</span>
-              </NavLink>
+
+              {/* Mobile Creator Hub Group */}
+              <div className="rounded-xl border border-navy-800/80 bg-navy-950/40 overflow-hidden my-1">
+                <button
+                  type="button"
+                  onClick={() => setMobileHubOpen(!mobileHubOpen)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-navy-200 hover:text-white"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-6 w-6 rounded-lg bg-violet-600/30 text-violet-300 flex items-center justify-center border border-violet-500/30">
+                      <Palette size={13} />
+                    </div>
+                    <span>Creator Hub</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    {pendingVerificationCount > 0 && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        {pendingVerificationCount}
+                      </span>
+                    )}
+                    <ChevronRight
+                      size={13}
+                      className={cn(
+                        'text-navy-400 transition-transform duration-200',
+                        mobileHubOpen && 'rotate-90'
+                      )}
+                    />
+                  </div>
+                </button>
+
+                {mobileHubOpen && (
+                  <div className="px-2 py-1.5 space-y-0.5 border-t border-navy-800/60 bg-navy-900/60">
+                    <NavLink
+                      to={ROUTES.studio}
+                      className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-300 hover:text-white"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <Palette size={14} className="text-navy-400" />
+                        <span>Creator Studio</span>
+                      </div>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                        PRO
+                      </span>
+                    </NavLink>
+                    <NavLink
+                      to={`${ROUTES.studio}?tab=coach`}
+                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-300 hover:text-white"
+                    >
+                      <Sparkles size={14} className="text-violet-400" />
+                      <span>AI Profile Coach</span>
+                    </NavLink>
+                    <NavLink
+                      to={currentPersona === 'admin' ? ROUTES.adminVerification : ROUTES.studio}
+                      className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-300 hover:text-white"
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <ShieldCheck size={14} className="text-amber-400" />
+                        <span>Creator Verification</span>
+                      </div>
+                      {pendingVerificationCount > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          {pendingVerificationCount}
+                        </span>
+                      )}
+                    </NavLink>
+                  </div>
+                )}
+              </div>
               <NavLink
                 to={ROUTES.briefNew}
                 className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"

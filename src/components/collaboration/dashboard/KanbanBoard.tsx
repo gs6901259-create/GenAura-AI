@@ -82,11 +82,11 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
         return (
           <div
             key={col.id}
-            className="flex flex-col rounded-2xl border border-slate-800 bg-slate-900/40 p-3.5 backdrop-blur-sm"
+            className="glass-card flex flex-col rounded-2xl p-3.5"
           >
             {/* Column Header */}
-            <div className="mb-3.5 flex items-center justify-between pb-2 border-b border-slate-800/80">
-              <span className="text-xs font-semibold text-slate-300">
+            <div className="mb-3.5 flex items-center justify-between pb-2 border-b border-navy-700/60">
+              <span className="text-xs font-semibold text-navy-200">
                 {col.title}
               </span>
               <span
@@ -99,7 +99,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
             {/* Column Cards */}
             <div className="flex flex-col gap-3 min-h-[300px]">
               {columnProjects.length === 0 ? (
-                <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-slate-800/60 p-4 text-center text-xs text-slate-500">
+                <div className="flex flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-navy-700/60 p-4 text-center text-xs text-navy-400">
                   No projects in this stage
                 </div>
               ) : (
@@ -111,7 +111,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                     <div
                       key={project.id}
                       onClick={() => onSelectProject(project)}
-                      className="group cursor-pointer rounded-xl border border-slate-800 bg-slate-900/90 p-4 shadow-md transition-all hover:-translate-y-0.5 hover:border-purple-500/60 hover:bg-slate-850 hover:shadow-lg hover:shadow-purple-950/20"
+                      className="group cursor-pointer rounded-xl border border-navy-700/60 bg-navy-900/90 p-4 shadow-md transition-all hover:-translate-y-0.5 hover:border-purple-500/60 hover:shadow-lg hover:shadow-purple-950/20"
                     >
                       {/* Creator info header */}
                       <div className="flex items-center justify-between gap-2">
@@ -119,13 +119,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                           <img
                             src={creator?.avatarUrl}
                             alt={creator?.name}
-                            className="h-7 w-7 rounded-full object-cover ring-1 ring-slate-700"
+                            className="h-7 w-7 rounded-full object-cover ring-1 ring-navy-600"
                           />
                           <div className="truncate">
-                            <h4 className="text-xs font-semibold text-white truncate max-w-[120px]">
+                            <h4 className="text-xs font-bold text-navy-50 truncate max-w-[120px]">
                               {creator?.name}
                             </h4>
-                            <p className="text-[10px] text-slate-400">
+                            <p className="text-[10px] text-navy-400">
                               {creator?.handle}
                             </p>
                           </div>
@@ -134,7 +134,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       </div>
 
                       {/* Project title */}
-                      <h5 className="mt-3 text-xs font-medium text-slate-200 line-clamp-2 leading-relaxed">
+                      <h5 className="mt-3 text-xs font-semibold text-navy-100 line-clamp-2 leading-relaxed">
                         {project.title}
                       </h5>
 
@@ -148,8 +148,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       )}
 
                       {/* Deliverables summary */}
-                      <div className="mt-3 flex items-center gap-3 text-[11px] text-slate-400 border-t border-slate-800/80 pt-2.5">
-                        <span className="flex items-center gap-1 font-medium text-slate-300">
+                      <div className="mt-3 flex items-center gap-3 text-[11px] text-navy-400 border-t border-navy-700/60 pt-2.5">
+                        <span className="flex items-center gap-1 font-medium text-navy-200">
                           <Video className="h-3.5 w-3.5 text-purple-400" />
                           {project.deliverables.length} deliv.
                         </span>
@@ -159,13 +159,13 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({
                       </div>
 
                       {/* Timeline notice */}
-                      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400">
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-navy-400">
                         <span className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3 text-slate-500" />
+                          <Calendar className="h-3 w-3 text-navy-500" />
                           Due: {new Date(project.targetDraftDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
                         </span>
 
-                        <span className="text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center">
+                        <span className="text-purple-400 opacity-0 group-hover:opacity-100 transition-opacity flex items-center font-medium">
                           Details <ArrowRight className="h-3 w-3 ml-0.5" />
                         </span>
                       </div>
