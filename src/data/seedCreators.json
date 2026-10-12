@@ -1,0 +1,662 @@
+[
+  {
+    "id": "creator-001",
+    "name": "Elena Rostova",
+    "handle": "@elena_tech",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    "bio": "AI engineer & tech educator breaking down machine learning workflows and developer productivity tools.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "LinkedIn", "X"],
+    "category": "Tech & AI",
+    "tags": ["ai", "machine-learning", "productivity", "saas", "coding", "devtools"],
+    "followers": 185000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 5.4,
+    "averageViews": 48000,
+    "rateCard": {
+      "postRate": 1400,
+      "videoRate": 2200,
+      "storyRate": 600
+    },
+    "location": {
+      "country": "United States",
+      "city": "San Francisco"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 25, "25-34": 55, "35-44": 15, "45+": 5 },
+      "topCountries": { "US": 58, "UK": 12, "CA": 10, "DE": 8, "Other": 12 },
+      "genderSplit": { "male": 62, "female": 35, "other": 3 }
+    },
+    "brandSafetyScore": 98,
+    "verified": true,
+    "collaborationHistory": ["Notion", "Linear", "Cursor", "GitHub"]
+  },
+  {
+    "id": "creator-002",
+    "name": "Marcus Chen",
+    "handle": "@marcus_builds",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+    "bio": "Full-stack developer building micro-SaaS startups in public. Daily tips on modern web frameworks and cloud.",
+    "primaryPlatform": "X",
+    "platforms": ["X", "LinkedIn", "YouTube"],
+    "category": "Tech & AI",
+    "tags": ["saas", "webdev", "react", "cloud", "productivity", "ai"],
+    "followers": 64000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 6.8,
+    "averageViews": 22000,
+    "rateCard": {
+      "postRate": 750,
+      "videoRate": 1200,
+      "storyRate": 350
+    },
+    "location": {
+      "country": "Canada",
+      "city": "Toronto"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 30, "25-34": 52, "35-44": 14, "45+": 4 },
+      "topCountries": { "US": 50, "CA": 20, "UK": 15, "Other": 15 },
+      "genderSplit": { "male": 74, "female": 23, "other": 3 }
+    },
+    "brandSafetyScore": 95,
+    "verified": true,
+    "collaborationHistory": ["Supabase", "Vercel", "Raycast"]
+  },
+  {
+    "id": "creator-003",
+    "name": "Maya Lin",
+    "handle": "@maya_creative",
+    "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+    "bio": "Product designer, design systems enthusiast, and creative technologist showcasing Figma tricks and UI aesthetics.",
+    "primaryPlatform": "Instagram",
+    "platforms": ["Instagram", "TikTok", "YouTube"],
+    "category": "Design & Creative",
+    "tags": ["design", "ui-ux", "figma", "creative", "aesthetics", "branding"],
+    "followers": 290000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 4.9,
+    "averageViews": 65000,
+    "rateCard": {
+      "postRate": 1800,
+      "videoRate": 2800,
+      "storyRate": 850
+    },
+    "location": {
+      "country": "United States",
+      "city": "New York"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 45, "25-34": 42, "35-44": 10, "45+": 3 },
+      "topCountries": { "US": 54, "UK": 16, "CA": 12, "Other": 18 },
+      "genderSplit": { "female": 58, "male": 39, "other": 3 }
+    },
+    "brandSafetyScore": 99,
+    "verified": true,
+    "collaborationHistory": ["Figma", "Adobe", "Squarespace", "Dribbble"]
+  },
+  {
+    "id": "creator-004",
+    "name": "Julian Vance",
+    "handle": "@julian_fit",
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+    "bio": "Certified strength & conditioning coach specializing in functional movement, mobility, and clean nutrition.",
+    "primaryPlatform": "Instagram",
+    "platforms": ["Instagram", "TikTok", "YouTube"],
+    "category": "Fitness & Health",
+    "tags": ["fitness", "strength", "mobility", "nutrition", "wellness", "athletic"],
+    "followers": 410000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 4.1,
+    "averageViews": 92000,
+    "rateCard": {
+      "postRate": 2100,
+      "videoRate": 3200,
+      "storyRate": 950
+    },
+    "location": {
+      "country": "United Kingdom",
+      "city": "London"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 38, "25-34": 46, "35-44": 12, "45+": 4 },
+      "topCountries": { "UK": 48, "US": 30, "EU": 14, "Other": 8 },
+      "genderSplit": { "male": 55, "female": 42, "other": 3 }
+    },
+    "brandSafetyScore": 96,
+    "verified": true,
+    "collaborationHistory": ["Gymshark", "Whoop", "MyProtein", "Athletic Greens"]
+  },
+  {
+    "id": "creator-005",
+    "name": "Aria Montgomery",
+    "handle": "@aria_capsule",
+    "avatar": "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=200&auto=format&fit=crop&q=80",
+    "bio": "Minimalist capsule wardrobe stylist and sustainable fashion advocate. Ethical wear styling for everyday chic.",
+    "primaryPlatform": "TikTok",
+    "platforms": ["TikTok", "Instagram"],
+    "category": "Fashion & Style",
+    "tags": ["sustainable", "fashion", "capsule-wardrobe", "styling", "minimalism", "eco"],
+    "followers": 82000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 7.2,
+    "averageViews": 38000,
+    "rateCard": {
+      "postRate": 850,
+      "videoRate": 1150,
+      "storyRate": 400
+    },
+    "location": {
+      "country": "United States",
+      "city": "Austin"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 62, "25-34": 30, "35-44": 6, "45+": 2 },
+      "topCountries": { "US": 65, "UK": 15, "CA": 10, "Other": 10 },
+      "genderSplit": { "female": 82, "male": 15, "other": 3 }
+    },
+    "brandSafetyScore": 97,
+    "verified": false,
+    "collaborationHistory": ["Everlane", "Reformation", "Allbirds"]
+  },
+  {
+    "id": "creator-006",
+    "name": "Kai Takahashi",
+    "handle": "@kai_pixels",
+    "avatar": "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop&q=80",
+    "bio": "High-octane esports caster, competitive FPS streamer, and gaming tech reviewer analyzing pro equipment.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "TikTok", "X"],
+    "category": "Gaming",
+    "tags": ["gaming", "esports", "fps", "pc-builds", "peripherals", "hardware"],
+    "followers": 780000,
+    "followerTier": "Macro (500K-1M)",
+    "engagementRate": 3.8,
+    "averageViews": 160000,
+    "rateCard": {
+      "postRate": 2800,
+      "videoRate": 4500,
+      "storyRate": 1100
+    },
+    "location": {
+      "country": "United States",
+      "city": "Seattle"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 58, "25-34": 32, "35-44": 8, "45+": 2 },
+      "topCountries": { "US": 55, "CA": 14, "UK": 12, "Other": 19 },
+      "genderSplit": { "male": 82, "female": 15, "other": 3 }
+    },
+    "brandSafetyScore": 92,
+    "verified": true,
+    "collaborationHistory": ["Logitech G", "Razer", "Secretlab", "Intel"]
+  },
+  {
+    "id": "creator-007",
+    "name": "Devon Miller",
+    "handle": "@devon_wealth",
+    "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&auto=format&fit=crop&q=80",
+    "bio": "Personal finance nerd making investing, budgeting apps, and wealth compound accessible for young professionals.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "Instagram", "LinkedIn"],
+    "category": "Finance & Business",
+    "tags": ["finance", "investing", "budgeting", "fintech", "wealth", "business"],
+    "followers": 320000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 4.5,
+    "averageViews": 85000,
+    "rateCard": {
+      "postRate": 1900,
+      "videoRate": 3100,
+      "storyRate": 900
+    },
+    "location": {
+      "country": "United States",
+      "city": "Chicago"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 22, "25-34": 58, "35-44": 16, "45+": 4 },
+      "topCountries": { "US": 72, "CA": 12, "UK": 8, "Other": 8 },
+      "genderSplit": { "male": 60, "female": 38, "other": 2 }
+    },
+    "brandSafetyScore": 96,
+    "verified": true,
+    "collaborationHistory": ["Robinhood", "Wealthfront", "Betterment", "Morning Brew"]
+  },
+  {
+    "id": "creator-008",
+    "name": "Clara Beauchamp",
+    "handle": "@clarab_tastes",
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
+    "bio": "Culinary adventurer exploring artisanal fermentation, zero-waste recipes, and plant-forward dining.",
+    "primaryPlatform": "Instagram",
+    "platforms": ["Instagram", "TikTok", "YouTube"],
+    "category": "Food & Culinary",
+    "tags": ["food", "recipes", "cooking", "plant-based", "culinary", "sustainable"],
+    "followers": 145000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 5.9,
+    "averageViews": 52000,
+    "rateCard": {
+      "postRate": 1250,
+      "videoRate": 1950,
+      "storyRate": 550
+    },
+    "location": {
+      "country": "France",
+      "city": "Lyon"
+    },
+    "language": "French",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 30, "25-34": 48, "35-44": 16, "45+": 6 },
+      "topCountries": { "FR": 45, "US": 25, "UK": 15, "Other": 15 },
+      "genderSplit": { "female": 68, "male": 30, "other": 2 }
+    },
+    "brandSafetyScore": 99,
+    "verified": false,
+    "collaborationHistory": ["Le Creuset", "Oatly", "KitchenAid"]
+  },
+  {
+    "id": "creator-009",
+    "name": "Liam Thorne",
+    "handle": "@liam_nomad",
+    "avatar": "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop&q=80",
+    "bio": "Cinematic visual storytelling, travel gear reviews, and remote work lifestyle across 40+ countries.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "Instagram"],
+    "category": "Lifestyle & Travel",
+    "tags": ["travel", "cinematography", "gear", "nomad", "lifestyle", "storytelling"],
+    "followers": 520000,
+    "followerTier": "Macro (500K-1M)",
+    "engagementRate": 3.4,
+    "averageViews": 110000,
+    "rateCard": {
+      "postRate": 2400,
+      "videoRate": 3900,
+      "storyRate": 1000
+    },
+    "location": {
+      "country": "Australia",
+      "city": "Melbourne"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 35, "25-34": 45, "35-44": 15, "45+": 5 },
+      "topCountries": { "US": 40, "AU": 25, "UK": 18, "Other": 17 },
+      "genderSplit": { "male": 52, "female": 45, "other": 3 }
+    },
+    "brandSafetyScore": 95,
+    "verified": true,
+    "collaborationHistory": ["Peak Design", "Sony Alpha", "NordVPN", "Airbnb"]
+  },
+  {
+    "id": "creator-010",
+    "name": "Siddharth Rao",
+    "handle": "@sid_neuroai",
+    "avatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=200&auto=format&fit=crop&q=80",
+    "bio": "AI researcher specializing in LLM agents, local models, and developer tooling. Clear, deep benchmarks.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "LinkedIn", "X"],
+    "category": "Tech & AI",
+    "tags": ["ai", "agents", "machine-learning", "coding", "software", "devtools"],
+    "followers": 95000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 7.4,
+    "averageViews": 42000,
+    "rateCard": {
+      "postRate": 1100,
+      "videoRate": 1750,
+      "storyRate": 500
+    },
+    "location": {
+      "country": "India",
+      "city": "Bengaluru"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 42, "25-34": 48, "35-44": 8, "45+": 2 },
+      "topCountries": { "US": 42, "IN": 35, "UK": 10, "Other": 13 },
+      "genderSplit": { "male": 78, "female": 19, "other": 3 }
+    },
+    "brandSafetyScore": 98,
+    "verified": true,
+    "collaborationHistory": ["Weights & Biases", "Hugging Face", "Pinecone"]
+  },
+  {
+    "id": "creator-011",
+    "name": "Zoe Kravitz-Kim",
+    "handle": "@zoe_glowup",
+    "avatar": "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop&q=80",
+    "bio": "Dermatologist-approved skincare chemist reviewing ingredients, active formulations, and cruelty-free beauty.",
+    "primaryPlatform": "TikTok",
+    "platforms": ["TikTok", "Instagram", "YouTube"],
+    "category": "Design & Creative",
+    "tags": ["skincare", "beauty", "formulations", "selfcare", "wellness"],
+    "followers": 1250000,
+    "followerTier": "Mega (1M+)",
+    "engagementRate": 4.2,
+    "averageViews": 310000,
+    "rateCard": {
+      "postRate": 4200,
+      "videoRate": 6800,
+      "storyRate": 1800
+    },
+    "location": {
+      "country": "United States",
+      "city": "Los Angeles"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 65, "25-34": 25, "35-44": 8, "45+": 2 },
+      "topCountries": { "US": 70, "CA": 12, "UK": 10, "Other": 8 },
+      "genderSplit": { "female": 85, "male": 12, "other": 3 }
+    },
+    "brandSafetyScore": 99,
+    "verified": true,
+    "collaborationHistory": ["CeraVe", "The Ordinary", "Glossier", "Sephora"]
+  },
+  {
+    "id": "creator-012",
+    "name": "Nate Diaz-Silva",
+    "handle": "@nate_mobility",
+    "avatar": "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=200&auto=format&fit=crop&q=80",
+    "bio": "Desk-worker posture correction, home workouts, and pain-free joints for busy remote professionals.",
+    "primaryPlatform": "Instagram",
+    "platforms": ["Instagram", "TikTok"],
+    "category": "Fitness & Health",
+    "tags": ["posture", "mobility", "fitness", "wellness", "home-workout", "ergonomics"],
+    "followers": 48000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 6.1,
+    "averageViews": 24000,
+    "rateCard": {
+      "postRate": 600,
+      "videoRate": 950,
+      "storyRate": 300
+    },
+    "location": {
+      "country": "Brazil",
+      "city": "Sao Paulo"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 28, "25-34": 52, "35-44": 16, "45+": 4 },
+      "topCountries": { "US": 45, "BR": 25, "UK": 15, "Other": 15 },
+      "genderSplit": { "male": 50, "female": 47, "other": 3 }
+    },
+    "brandSafetyScore": 97,
+    "verified": false,
+    "collaborationHistory": ["Theragun", "Deskbird"]
+  },
+  {
+    "id": "creator-013",
+    "name": "Hannah Berg",
+    "handle": "@hannah_finops",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80",
+    "bio": "Former corporate CFO turned creator teaching startup financial modeling, bootstrapping, and enterprise tools.",
+    "primaryPlatform": "LinkedIn",
+    "platforms": ["LinkedIn", "X"],
+    "category": "Finance & Business",
+    "tags": ["b2b", "saas", "finance", "business", "startups", "productivity"],
+    "followers": 72000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 5.8,
+    "averageViews": 31000,
+    "rateCard": {
+      "postRate": 1200,
+      "videoRate": 1800,
+      "storyRate": 500
+    },
+    "location": {
+      "country": "Germany",
+      "city": "Berlin"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 12, "25-34": 58, "35-44": 24, "45+": 6 },
+      "topCountries": { "US": 45, "DE": 22, "UK": 18, "Other": 15 },
+      "genderSplit": { "female": 48, "male": 49, "other": 3 }
+    },
+    "brandSafetyScore": 99,
+    "verified": true,
+    "collaborationHistory": ["Ramp", "Brex", "Mercury", "Stripe"]
+  },
+  {
+    "id": "creator-014",
+    "name": "Kiran & Tarun",
+    "handle": "@two_gamers",
+    "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200&auto=format&fit=crop&q=80",
+    "bio": "Co-op game reviews, indie gems discoveries, and hilarious couch gaming streams every weekend.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "TikTok"],
+    "category": "Gaming",
+    "tags": ["gaming", "indie", "co-op", "reviews", "comedy", "gameplay"],
+    "followers": 390000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 5.1,
+    "averageViews": 98000,
+    "rateCard": {
+      "postRate": 1600,
+      "videoRate": 2600,
+      "storyRate": 700
+    },
+    "location": {
+      "country": "United Kingdom",
+      "city": "Manchester"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 52, "25-34": 38, "35-44": 8, "45+": 2 },
+      "topCountries": { "UK": 50, "US": 30, "CA": 10, "Other": 10 },
+      "genderSplit": { "male": 68, "female": 29, "other": 3 }
+    },
+    "brandSafetyScore": 94,
+    "verified": true,
+    "collaborationHistory": ["Steam", "SteelSeries", "Elgato"]
+  },
+  {
+    "id": "creator-015",
+    "name": "Sonia Morales",
+    "handle": "@sonia_slowliving",
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop&q=80",
+    "bio": "Mindful living, slow mornings, architectural ceramics, and calming interior styling inspiration.",
+    "primaryPlatform": "Instagram",
+    "platforms": ["Instagram", "TikTok"],
+    "category": "Lifestyle & Travel",
+    "tags": ["lifestyle", "interior", "slow-living", "mindfulness", "ceramics", "design"],
+    "followers": 115000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 4.7,
+    "averageViews": 36000,
+    "rateCard": {
+      "postRate": 1100,
+      "videoRate": 1650,
+      "storyRate": 500
+    },
+    "location": {
+      "country": "Spain",
+      "city": "Barcelona"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 34, "25-34": 50, "35-44": 12, "45+": 4 },
+      "topCountries": { "ES": 35, "US": 35, "UK": 15, "Other": 15 },
+      "genderSplit": { "female": 78, "male": 19, "other": 3 }
+    },
+    "brandSafetyScore": 98,
+    "verified": false,
+    "collaborationHistory": ["Muuto", "HAY", "Aesop"]
+  },
+  {
+    "id": "creator-016",
+    "name": "Tariq Al-Mansoor",
+    "handle": "@tariq_cloud",
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop&q=80",
+    "bio": "DevOps & cloud architect breaking down Kubernetes, scalable architecture, and platform engineering.",
+    "primaryPlatform": "LinkedIn",
+    "platforms": ["LinkedIn", "YouTube", "X"],
+    "category": "Tech & AI",
+    "tags": ["devops", "cloud", "kubernetes", "saas", "software", "infrastructure"],
+    "followers": 54000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 6.2,
+    "averageViews": 19000,
+    "rateCard": {
+      "postRate": 900,
+      "videoRate": 1500,
+      "storyRate": 400
+    },
+    "location": {
+      "country": "United Arab Emirates",
+      "city": "Dubai"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 18, "25-34": 62, "35-44": 17, "45+": 3 },
+      "topCountries": { "US": 40, "IN": 25, "AE": 15, "Other": 20 },
+      "genderSplit": { "male": 80, "female": 18, "other": 2 }
+    },
+    "brandSafetyScore": 99,
+    "verified": true,
+    "collaborationHistory": ["AWS", "Datadog", "HashiCorp"]
+  },
+  {
+    "id": "creator-017",
+    "name": "Chloe Dupont",
+    "handle": "@chloedupont_fit",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80",
+    "bio": "Pilates instructor, athletic recovery practitioner, and sustainable activewear review creator.",
+    "primaryPlatform": "TikTok",
+    "platforms": ["TikTok", "Instagram"],
+    "category": "Fitness & Health",
+    "tags": ["pilates", "fitness", "activewear", "sustainable", "wellness", "recovery"],
+    "followers": 175000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 6.5,
+    "averageViews": 62000,
+    "rateCard": {
+      "postRate": 1350,
+      "videoRate": 1900,
+      "storyRate": 600
+    },
+    "location": {
+      "country": "Canada",
+      "city": "Montreal"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 55, "25-34": 35, "35-44": 8, "45+": 2 },
+      "topCountries": { "US": 52, "CA": 28, "UK": 10, "Other": 10 },
+      "genderSplit": { "female": 86, "male": 11, "other": 3 }
+    },
+    "brandSafetyScore": 98,
+    "verified": true,
+    "collaborationHistory": ["Lululemon", "Alo Yoga", "Oura Ring"]
+  },
+  {
+    "id": "creator-018",
+    "name": "Felix Baum",
+    "handle": "@felix_ux",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80",
+    "bio": "Design critiques, design-to-code tutorials, Framer templates, and interaction design micro-animations.",
+    "primaryPlatform": "YouTube",
+    "platforms": ["YouTube", "X"],
+    "category": "Design & Creative",
+    "tags": ["design", "framer", "ui-ux", "animation", "creative", "devtools"],
+    "followers": 88000,
+    "followerTier": "Micro (10K-100K)",
+    "engagementRate": 5.9,
+    "averageViews": 32000,
+    "rateCard": {
+      "postRate": 950,
+      "videoRate": 1600,
+      "storyRate": 450
+    },
+    "location": {
+      "country": "Germany",
+      "city": "Munich"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 32, "25-34": 52, "35-44": 12, "45+": 4 },
+      "topCountries": { "US": 45, "DE": 20, "UK": 15, "Other": 20 },
+      "genderSplit": { "male": 65, "female": 32, "other": 3 }
+    },
+    "brandSafetyScore": 99,
+    "verified": false,
+    "collaborationHistory": ["Framer", "Webflow", "Spline"]
+  },
+  {
+    "id": "creator-019",
+    "name": "Amara Okafor",
+    "handle": "@amara_eats",
+    "avatar": "https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=200&auto=format&fit=crop&q=80",
+    "bio": "West African fusion cooking, quick 20-minute weeknight dinners, and pantry spice cabinet guides.",
+    "primaryPlatform": "TikTok",
+    "platforms": ["TikTok", "Instagram", "YouTube"],
+    "category": "Food & Culinary",
+    "tags": ["food", "cooking", "recipes", "quick-meals", "culinary", "flavor"],
+    "followers": 460000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 5.2,
+    "averageViews": 125000,
+    "rateCard": {
+      "postRate": 1850,
+      "videoRate": 2700,
+      "storyRate": 800
+    },
+    "location": {
+      "country": "United Kingdom",
+      "city": "London"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 42, "25-34": 44, "35-44": 11, "45+": 3 },
+      "topCountries": { "UK": 55, "US": 25, "NG": 10, "Other": 10 },
+      "genderSplit": { "female": 72, "male": 26, "other": 2 }
+    },
+    "brandSafetyScore": 97,
+    "verified": true,
+    "collaborationHistory": ["HelloFresh", "Ninja Kitchen", "Tesco"]
+  },
+  {
+    "id": "creator-020",
+    "name": "Lucas Sterling",
+    "handle": "@lucas_startups",
+    "avatar": "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=200&auto=format&fit=crop&q=80",
+    "bio": "Early stage angel investor demystifying venture capital pitch decks, B2B sales cycles, and SaaS metrics.",
+    "primaryPlatform": "LinkedIn",
+    "platforms": ["LinkedIn", "YouTube"],
+    "category": "Finance & Business",
+    "tags": ["venture-capital", "startups", "b2b", "saas", "business", "investing"],
+    "followers": 140000,
+    "followerTier": "Mid-Tier (100K-500K)",
+    "engagementRate": 4.2,
+    "averageViews": 45000,
+    "rateCard": {
+      "postRate": 1700,
+      "videoRate": 2500,
+      "storyRate": 750
+    },
+    "location": {
+      "country": "United States",
+      "city": "Boston"
+    },
+    "language": "English",
+    "audienceDemographics": {
+      "topAgeBrackets": { "18-24": 15, "25-34": 60, "35-44": 20, "45+": 5 },
+      "topCountries": { "US": 68, "UK": 12, "CA": 10, "Other": 10 },
+      "genderSplit": { "male": 68, "female": 30, "other": 2 }
+    },
+    "brandSafetyScore": 99,
+    "verified": true,
+    "collaborationHistory": ["Carta", "AngelList", "Deel"]
+  }
+]
