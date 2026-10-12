@@ -20,6 +20,7 @@ import {
   User,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { formatRupees } from '@/lib/utils';
 
 interface ProposalFormModalProps {
   creators: Creator[];
@@ -60,8 +61,8 @@ export const ProposalFormModal: React.FC<ProposalFormModalProps> = ({
   );
 
   // Step 2: Commercial Terms
-  const [budget, setBudget] = useState<number>(1500);
-  const [currency, setCurrency] = useState('USD');
+  const [budget, setBudget] = useState<number>(25000);
+  const [currency, setCurrency] = useState('INR');
   const [startDate, setStartDate] = useState(
     new Date().toISOString().split('T')[0]
   );
@@ -278,7 +279,7 @@ export const ProposalFormModal: React.FC<ProposalFormModalProps> = ({
                   >
                     {creators.map((c) => (
                       <option key={c.id as string} value={c.id as string}>
-                        {c.name} ({c.handle}) — ${c.hourlyRate}/hr ({c.category})
+                        {c.name} ({c.handle}) — {formatRupees(c.hourlyRate)}/hr ({c.category})
                       </option>
                     ))}
                   </select>
@@ -312,7 +313,7 @@ export const ProposalFormModal: React.FC<ProposalFormModalProps> = ({
                   <option value="">No linked brief (Direct proposal)</option>
                   {briefs.map((b) => (
                     <option key={b.id as string} value={b.id as string}>
-                      {b.title} (${b.budget.min} - ${b.budget.max})
+                      {b.title} ({formatRupees(b.budget.min)} - {formatRupees(b.budget.max)})
                     </option>
                   ))}
                 </select>
@@ -365,11 +366,11 @@ export const ProposalFormModal: React.FC<ProposalFormModalProps> = ({
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                 <div>
                   <label className="block text-xs font-semibold text-navy-300 mb-1.5">
-                    Proposed Budget (USD) *
+                    Proposed Budget (₹ INR) *
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-navy-500 text-xs font-bold">
-                      $
+                      ₹
                     </span>
                     <input
                       type="number"
@@ -619,7 +620,7 @@ export const ProposalFormModal: React.FC<ProposalFormModalProps> = ({
                       Proposed Budget
                     </span>
                     <p className="text-base font-bold text-cyan-400 font-mono mt-0.5">
-                      ${budget.toLocaleString()} {currency}
+                      {formatRupees(budget)} {currency}
                     </p>
                   </div>
                 </div>

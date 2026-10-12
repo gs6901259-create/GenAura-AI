@@ -31,6 +31,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
+import { formatRupees } from '@/lib/utils';
 
 export const DealDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -570,7 +571,7 @@ export const DealDetailPage: React.FC = () => {
                       <DollarSign className="h-3 w-3" /> Budget
                     </span>
                     <div className="text-base font-bold text-cyan-400 font-mono mt-0.5">
-                      ${currentVersion.terms.budget.toLocaleString()} {currentVersion.terms.currency}
+                      {formatRupees(currentVersion.terms.budget)} {currentVersion.terms.currency || 'INR'}
                     </div>
                   </div>
 
@@ -739,7 +740,7 @@ export const DealDetailPage: React.FC = () => {
               </h4>
               <p className="text-xs text-navy-300 leading-relaxed">
                 {confirmAction === 'accept' &&
-                  `You are about to accept the current terms of $${deal.currentTerms.budget.toLocaleString()}. This action locks agreed terms.`}
+                  `You are about to accept the current terms of ${formatRupees(deal.currentTerms.budget)}. This action locks agreed terms.`}
                 {confirmAction === 'decline' &&
                   'Are you sure you want to decline this proposal? The deal will be closed.'}
                 {confirmAction === 'withdraw' &&

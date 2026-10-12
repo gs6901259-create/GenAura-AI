@@ -5,18 +5,43 @@ export function cn(...classes: (string | undefined | null | false)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
-/** Format a number as USD currency string */
-export function formatUSD(amount: number, compact = false): string {
-  if (compact && amount >= 1000) {
-    return `\$${(amount / 1000).toFixed(1)}k`;
+/**
+ * Format a number as Indian Rupees (₹, INR) with Indian numbering grouping (lakhs, crores).
+ * Example: 25000 -> "₹25,000", 125000 -> "₹1,25,000", 1000000 -> "₹10,00,000"
+ */
+export function formatRupees(amount: number, compact = false): string {
+  if (typeof amount !== 'number' || isNaN(amount)) return '₹0';
+  const prefix = amount < 0 ? '-' : '';
+  const abs = Math.abs(amount);
+
+  if (compact && abs >= 10_000_000) {
+    return `${prefix}₹${(abs / 10_000_000).toFixed(1)}Cr`;
   }
-  return new Intl.NumberFormat('en-US', {
+  if (compact && abs >= 100_000) {
+    return `${prefix}₹${(abs / 100_000).toFixed(1)}L`;
+  }
+  if (compact && abs >= 1_000) {
+    return `${prefix}₹${(abs / 1_000).toFixed(1)}k`;
+  }
+
+  return `${prefix}${new Intl.NumberFormat('en-IN', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'INR',
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(abs)}`;
 }
+
+/**
+ * Backwards-compatible alias redirected to Indian Rupees (INR)
+ * @deprecated Use formatRupees or formatINR instead.
+ */
+export function formatUSD(amount: number, compact = false): string {
+  return formatRupees(amount, compact);
+}
+
+export { formatINR } from '@/services/currencyService';
+
 
 /** Format an ISO date string to a human-readable relative time */
 export function timeAgo(isoDate: string): string {

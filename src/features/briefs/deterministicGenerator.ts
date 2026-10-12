@@ -31,7 +31,7 @@ export function generateDeterministicBriefContent(
   const objective = input.objective || 'brand_awareness';
   const tone = input.tone || 'Authentic & Relatable';
   const budgetTotal = Number(input.budgetTotal) || 15000;
-  const currency = input.currency || 'USD';
+  const currency = input.currency || 'INR';
   const channels = input.channels && input.channels.length > 0 ? input.channels : ['Instagram', 'TikTok'];
   const demographics = input.demographics?.trim() || 'Modern digitally savvy consumers';
   const painPoints = input.painPoints?.trim() || 'Workflow inefficiencies and friction points';

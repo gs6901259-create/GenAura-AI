@@ -16,7 +16,14 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
 import { walletService } from '@/services/walletService';
-import { formatINR, paiseToRupees, rupeesToPaise, maskFinancialIdentifier } from '@/services/currencyService';
+import {
+  formatINR,
+  paiseToRupees,
+  rupeesToPaise,
+  maskFinancialIdentifier,
+  numberToIndianWords,
+  calculateGst,
+} from '@/services/currencyService';
 import { Wallet, WalletTransaction, PayoutDestination, WithdrawalRequest } from '@/types/wallet';
 import {
   Wallet as WalletIcon,
@@ -1333,6 +1340,10 @@ function PayoutAccountsModal({
 // ────────────────────────────────────────────────────────────────────────────
 function TransactionReceiptModal({ txn, onClose }: { txn: WalletTransaction; onClose: () => void }) {
   const isCredit = txn.type === 'topup' || txn.type === 'transfer_received' || txn.type === 'refund';
+  const invoiceNumber = `GA-2026-${txn.id.slice(-6).toUpperCase()}`;
+  const amountRupees = paiseToRupees(txn.amountInPaise);
+  const words = numberToIndianWords(amountRupees);
+  const gst = calculateGst(txn.amountInPaise, 18, txn.type === 'topup');
 
   return (
     <div className="fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
@@ -1340,7 +1351,10 @@ function TransactionReceiptModal({ txn, onClose }: { txn: WalletTransaction; onC
         <div className="flex items-center justify-between border-b border-navy-800 pb-3">
           <div className="flex items-center gap-2">
             <CheckCircle2 size={18} className="text-emerald-400" />
-            <h3 className="text-sm font-bold text-navy-50">Transaction Digital Receipt</h3>
+            <div>
+              <h3 className="text-sm font-bold text-navy-50">Transaction Digital Receipt</h3>
+              <p className="text-[10px] font-mono text-navy-400">Invoice: {invoiceNumber}</p>
+            </div>
           </div>
           <button type="button" onClick={onClose} className="text-navy-400 hover:text-white">
             <X size={16} />
@@ -1351,6 +1365,9 @@ function TransactionReceiptModal({ txn, onClose }: { txn: WalletTransaction; onC
           <div className="text-2xl font-extrabold text-navy-50">
             {isCredit ? '+' : '-'}{formatINR(txn.amountInPaise)}
           </div>
+          <p className="text-[11px] text-cyan-300 font-medium italic px-4">
+            {words}
+          </p>
           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
             {txn.status}
           </span>
@@ -1388,18 +1405,36 @@ function TransactionReceiptModal({ txn, onClose }: { txn: WalletTransaction; onC
             </div>
           )}
           <div className="flex justify-between">
+            <span className="text-navy-400">Platform Processing Fee:</span>
+            <span className="text-navy-200 font-mono">{formatINR(txn.feeInPaise)} (1.5%)</span>
+          </div>
+          <div className="flex justify-between border-t border-navy-850 pt-1.5">
+            <span className="text-navy-400">GST (18% applicable):</span>
+            <span className="text-navy-200 font-mono">
+              {gst.isGstExempt ? 'Exempt (Wallet Top-up)' : formatINR(gst.gstPaise)}
+            </span>
+          </div>
+          <div className="flex justify-between">
             <span className="text-navy-400">Ledger Entry Type:</span>
             <span className="text-navy-200 capitalize">{txn.type.replace('_', ' ')}</span>
           </div>
         </div>
 
-        <div className="flex justify-end pt-2">
+        <div className="flex gap-2 pt-2">
+          <button
+            type="button"
+            onClick={() => window.print()}
+            className="flex-1 py-2 rounded-xl text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white flex items-center justify-center gap-1.5 shadow-md"
+          >
+            <Download size={13} />
+            <span>Print / Save Receipt</span>
+          </button>
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-2 rounded-xl text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-white"
+            className="px-4 py-2 rounded-xl text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-white"
           >
-            Close Receipt
+            Close
           </button>
         </div>
       </div>

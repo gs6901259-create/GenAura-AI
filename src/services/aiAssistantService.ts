@@ -32,8 +32,10 @@ Your core responsibilities:
    - Creator Tools: Guide creators through Creator Studio, AI Profile Coach (bio rewrites, hook formulas), and Portfolio Showcase.
    - 100-Point Verification Rubric: Explain criteria (Profile Completeness 20pts, Portfolio Quality 25pts, Content Originality 20pts, Professional Readiness 15pts, Platform Authenticity 20pts). State clearly that >=85 pts qualifies for human review approval.
    - Brand Discovery & Matching: Explain the 6-factor AuraMatch engine (Niche 30%, Audience 20%, Budget 15%, Platform 15%, Portfolio 10%, Location 10%).
-   - Campaign Briefs (BriefGen AI): Assist brands in structuring objectives, deliverables, timelines, and budgets.
+   - Campaign Briefs (BriefGen AI): Assist brands in structuring objectives, deliverables, timelines, and budgets in INR.
    - Collaboration & Deal Room: Guide users on proposals, counteroffers, audit trails, and deliverable review stages.
+   - Digital Wallet & Collaboration Payments: Explain how users manage Indian Rupee (₹ INR) balances (Available, Pending, Reserved in Escrow), add funds via UPI/Cards/NetBanking, lock milestone payments in escrow, and withdraw earnings.
+   - Currency Standards: All budgets, rates, proposals, and wallet transactions use Indian Rupees (₹ INR) with en-IN formatting (₹500, ₹1,500, ₹25,000, ₹1,25,000, ₹10,00,000). Recommend budgets by creator tier: Nano (₹2,000–₹5,000), Micro (₹5,000–₹25,000), Mid (₹25,000–₹1,00,000), Macro (₹1,00,000+).
 
 2. General World Knowledge & Creative Strategy:
    - Answer general knowledge, geography, history, science, and calculation questions accurately and concisely (e.g., "What is the capital of Japan?" -> Tokyo).
@@ -313,7 +315,7 @@ To maximize brand discovery and achieve an eligible verification score on GenAur
    - Attribute real client names and highlight project performance metrics (impressions, conversion lifts).
 
 3. **Set Transparent Pricing & Packages:**
-   - Provide clear starting rates for common formats (e.g., $450/Reel, $1,200/Monthly Retainer).
+   - Provide clear starting rates for common formats (e.g., ₹25,000/Reel, ₹1,25,000/Monthly Retainer).
    - Brands filter by budget; transparent pricing ensures you appear in compatible searches.
 
 4. **Verify Your Social Handles:**
@@ -479,7 +481,52 @@ You can customize your GenAura AI workspace anytime:
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 11. GENERAL CONVERSATIONAL FALLBACK (Intent-Aware, Never repetitive upload loop)
+    // 11. INR WALLET, DIGITAL ESCROW & COLLABORATION PAYMENTS
+    // ─────────────────────────────────────────────────────────────────────────
+    if (
+      q.includes('wallet') ||
+      q.includes('balance') ||
+      q.includes('payment') ||
+      q.includes('payout') ||
+      q.includes('withdraw') ||
+      q.includes('inr') ||
+      q.includes('rupee') ||
+      q.includes('escrow') ||
+      q.includes('razorpay') ||
+      q.includes('gst') ||
+      q.includes('tax') ||
+      q.includes('deposit')
+    ) {
+      return {
+        text: `### 💳 GenAura AI — INR Wallet & Milestone Escrow
+
+All financial operations on GenAura AI are conducted in **Indian Rupees (₹ INR)** with exact integer-paise accounting (1 INR = 100 paise):
+
+1. **Balance Architecture:**
+   - **Available Balance:** Funds spendable on new proposals or withdrawable via UPI / Bank IMPS.
+   - **Reserved (Escrow) Balance:** Locked funds deposited for accepted milestone agreements, released only upon deliverable review approval.
+   - **Pending Balance:** Settling incoming transfers or gateway clearances.
+
+2. **Milestone Escrow Workflow:**
+   - **Deposit:** Brands fund agreed milestones in advance into secure escrow.
+   - **Review:** Creators submit work for approval inside the Smart Deal Room.
+   - **Release:** Upon brand approval, funds release instantly into the creator's available wallet balance.
+
+3. **Recommended Creator Pricing Benchmarks (INR):**
+   - **Nano Creators (1k–10k followers):** ₹2,000 – ₹5,000 per deliverable
+   - **Micro Creators (10k–50k followers):** ₹5,000 – ₹25,000 per deliverable
+   - **Mid-Tier Creators (50k–250k followers):** ₹25,000 – ₹1,00,000 per campaign
+   - **Macro Creators (250k+ followers):** ₹1,00,000+ per campaign
+
+4. **Payouts & Invoices:**
+   - Withdrawals support instant **UPI (VPA)** and **Direct Bank Transfer (NEFT/IMPS with IFSC)**.
+   - Downloadable GST-compliant invoices and digital audit receipts are generated for every completed transaction.`,
+        actionLink: { label: 'Open INR Wallet & Earnings', to: '/wallet' },
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 12. GENERAL CONVERSATIONAL FALLBACK (Intent-Aware, Never repetitive upload loop)
     // ─────────────────────────────────────────────────────────────────────────
     return {
       text: `Hello! I am **Aura**, your GenAura AI assistant.
@@ -487,6 +534,7 @@ You can customize your GenAura AI workspace anytime:
 I can help you with:
 - **For Brands:** [Create Campaign Briefs](/briefs/new) with BriefGen AI, brainstorm campaign ideas, and [Discover Creators](/discovery) using our 6-factor AuraMatch engine.
 - **For Creators:** [Open Creator Studio](/studio) to optimize your bio with the AI Profile Coach, review the [100-Point Verification Rubric](/studio), and showcase your portfolio.
+- **For Payments & Wallet:** [Manage INR Wallet](/wallet) to add funds, monitor milestone escrow, or request payouts in Indian Rupees (₹).
 - **For Collaborations:** Negotiate in the [Smart Deal Room](/deals) or manage [Collaboration Requests](/projects).
 
 *(Operating in Demo AI mode. For open-ended conversation across any topic, you can configure a live Gemini API key in [Settings](/settings).)*`,
@@ -496,6 +544,9 @@ I can help you with:
 
   private detectActionLink(prompt: string): { label: string; to: string } | undefined {
     const p = prompt.toLowerCase();
+    if (p.includes('wallet') || p.includes('payout') || p.includes('balance') || p.includes('escrow') || p.includes('withdraw') || p.includes('inr')) {
+      return { label: 'Open INR Wallet', to: '/wallet' };
+    }
     if (p.includes('brief') || p.includes('campaign')) {
       return { label: 'Open BriefGen AI', to: '/briefs/new' };
     }

@@ -101,8 +101,8 @@ export interface Creator {
   bio: string;
   category: CreatorCategory;
   skills: string[];              // free-form skill tags
-  hourlyRate: number;            // USD
-  currency: 'USD';
+  hourlyRate: number;            // INR (or converted legacy USD)
+  currency: 'USD' | 'INR' | string;
   rating: number;                // 0–5 (one decimal)
   reviewCount: number;
   completedProjects: number;
@@ -224,7 +224,7 @@ export interface CreativeBrief {
   budget: {
     min: number;
     max: number;
-    currency: 'USD';
+    currency: 'USD' | 'INR' | string;
   };
   timeline: {
     startDate: string;           // ISO 8601 date
@@ -302,8 +302,8 @@ export interface ProjectRequest {
   briefId: BriefId;
   creatorId: CreatorId;
   status: ProjectStatus;
-  agreedRate: number;            // USD
-  currency: 'USD';
+  agreedRate: number;            // INR (or legacy USD)
+  currency: 'USD' | 'INR' | string;
   startDate: string;             // ISO 8601 date
   endDate: string;               // ISO 8601 date
   milestones: Milestone[];

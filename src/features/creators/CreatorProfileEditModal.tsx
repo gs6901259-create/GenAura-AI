@@ -163,7 +163,7 @@ export const CreatorProfileEditModal: React.FC<CreatorProfileEditModalProps> = (
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-navy-300 uppercase tracking-wider mb-1.5">
-                Hourly Rate (USD) *
+                Hourly Rate (₹ INR) *
               </label>
               <Input
                 type="number"

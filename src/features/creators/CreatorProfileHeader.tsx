@@ -11,6 +11,8 @@ import {
   Send,
   Handshake,
 } from 'lucide-react';
+import { formatRupees } from '@/lib/utils';
+
 
 export interface CreatorProfileHeaderProps {
   creator: Creator;
@@ -115,7 +117,7 @@ export const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
           )}
 
           <div className="text-navy-100 font-semibold ml-auto text-sm">
-            ${creator.hourlyRate} <span className="text-navy-400 text-xs font-normal">/ hour</span>
+            {formatRupees(creator.hourlyRate)} <span className="text-navy-400 text-xs font-normal">/ hour</span>
           </div>
         </div>
       </div>

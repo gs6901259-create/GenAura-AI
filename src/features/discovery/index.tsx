@@ -48,7 +48,7 @@ import {
   EmptyState,
   StarRating,
 } from '@/components/ui';
-import { cn, formatUSD } from '@/lib/utils';
+import { cn, formatUSD, formatRupees } from '@/lib/utils';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Match Scoring Engine (Integrated from Member 3's deterministic scoring engine)
@@ -186,7 +186,7 @@ export function computeCreatorMatch(creator: Creator, brief: CreativeBrief | nul
       factor: 'Budget Compatibility (15%)',
       score: 100,
       type: 'positive',
-      detail: `Estimated deliverable pricing (${formatUSD(creator.hourlyRate)}/hr) fits comfortably within campaign budget ($${maxBudget.toLocaleString()}).`,
+      detail: `Estimated deliverable pricing (${formatRupees(creator.hourlyRate)}/hr) fits comfortably within campaign budget (${formatRupees(maxBudget)}).`,
     });
   } else if (estimatedCost <= maxBudget * 1.25) {
     budgetCompatibility = 75;

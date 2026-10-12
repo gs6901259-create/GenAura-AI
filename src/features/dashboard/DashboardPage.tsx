@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import {
   Users, FileText, Bookmark, FolderKanban, Zap, TrendingUp,
   Plus, Search, Star, ArrowRight, Clock, CheckCircle2, CircleDot,
-  Sparkles,
+  Sparkles, Wallet,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import {
@@ -11,7 +11,7 @@ import {
   PageHeader, StarRating,
 } from '@/components/ui';
 import { ROUTES } from '@/types';
-import { timeAgo, formatUSD } from '@/lib/utils';
+import { timeAgo, formatUSD, formatRupees } from '@/lib/utils';
 
 // ── Status badge helpers ──────────────────────────────────────────
 function creatorStatusBadge(status: string) {
@@ -173,7 +173,7 @@ export function DashboardPage() {
           <Sparkles size={16} className="text-violet-400" />
           Quick Actions
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
           <QuickAction
             icon={Users}
             label="Explore Creators"
@@ -200,6 +200,13 @@ export function DashboardPage() {
             label="View Projects"
             description="Track active collaborations"
             to={ROUTES.projects}
+            accent="bg-indigo-600"
+          />
+          <QuickAction
+            icon={Wallet}
+            label="INR Wallet & Payouts"
+            description="Manage funds, escrows & payouts"
+            to={ROUTES.wallet}
             accent="bg-emerald-600"
           />
         </div>

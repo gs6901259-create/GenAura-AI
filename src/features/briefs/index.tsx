@@ -31,6 +31,7 @@ import {
   Save,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
+import { formatRupees } from '@/lib/utils';
 import {
   CreativeBrief,
   BriefStatus,
@@ -218,7 +219,7 @@ export function BriefsPage() {
         <StatCard label="Total Briefs" value={metrics.total} icon={FileText} accent="violet" />
         <StatCard label="Published Active" value={metrics.published} icon={CheckCircle2} accent="emerald" />
         <StatCard label="Drafts in Pipeline" value={metrics.drafts} icon={Edit3} accent="amber" />
-        <StatCard label="Pipeline Budget" value={`$${metrics.totalBudget.toLocaleString()}`} icon={DollarSign} accent="cyan" />
+        <StatCard label="Pipeline Budget" value={formatRupees(metrics.totalBudget)} icon={DollarSign} accent="cyan" />
         <StatCard label="Demo AI Generated" value={metrics.demoGenerated} icon={Sparkles} accent="rose" />
       </div>
 
@@ -317,7 +318,7 @@ export function BriefsPage() {
                 <div>
                   <span className="text-navy-500 block text-[10px] uppercase font-semibold">Budget</span>
                   <span className="text-emerald-400 font-bold">
-                    ${(b.budget.max || b.budget.min).toLocaleString()} {b.budget.currency}
+                    {formatRupees(b.budget.max || b.budget.min)} {b.budget.currency || 'INR'}
                   </span>
                 </div>
                 <div className="text-right">
@@ -486,7 +487,7 @@ export function BriefNewPage() {
       budget: {
         min: budgetMin,
         max: budgetMax,
-        currency: 'USD',
+        currency: 'INR',
       },
       timeline: {
         startDate,
@@ -680,7 +681,7 @@ export function BriefNewPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Min Budget (USD) *</label>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Min Budget (₹ INR) *</label>
               <input
                 type="number"
                 min={1}
@@ -691,7 +692,7 @@ export function BriefNewPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Max Budget (USD) *</label>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Max Budget (₹ INR) *</label>
               <input
                 type="number"
                 min={1}
@@ -827,7 +828,7 @@ export function BriefDetailPage() {
     const md = `# BRIEF: ${brief.title.toUpperCase()}
 Brand: ${brief.brandName || 'N/A'}
 Status: ${brief.status}
-Budget: $${brief.budget.max.toLocaleString()} ${brief.budget.currency}
+Budget: ₹${brief.budget.max.toLocaleString('en-IN')} ${brief.budget.currency || 'INR'}
 Timeline: ${brief.timeline.startDate} to ${brief.timeline.deadline}
 
 ${brief.isDemoGenerated ? '⚡ DEMO-MODE GENERATION (Deterministic Template Engine - No API Credentials)\n' : ''}
@@ -935,7 +936,7 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
                 />
               ) : (
                 <span className="text-xl font-bold text-emerald-400">
-                  ${brief.budget.max.toLocaleString()} {brief.budget.currency}
+                  {formatRupees(brief.budget.max)} {brief.budget.currency || 'INR'}
                 </span>
               )}
             </div>

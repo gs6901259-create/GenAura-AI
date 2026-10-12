@@ -193,7 +193,7 @@ export function CreatorStudioPage() {
       errors.location = 'City and country are required';
     }
     if (Number(formData.hourlyRate) <= 0) {
-      errors.hourlyRate = 'Please provide a valid hourly rate greater than $0';
+      errors.hourlyRate = 'Please provide a valid hourly rate greater than ₹0';
     }
 
     setFormErrors(errors);
@@ -506,9 +506,9 @@ export function CreatorStudioPage() {
                 </div>
 
                 <Input
-                  label="Hourly Rate (USD)"
+                  label="Hourly Rate (₹ INR)"
                   type="number"
-                  placeholder="75"
+                  placeholder="2500"
                   value={formData.hourlyRate}
                   onChange={(e) => setFormData({ ...formData, hourlyRate: Number(e.target.value) })}
                   error={formErrors.hourlyRate}

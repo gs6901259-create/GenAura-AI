@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { Creator, PortfolioItem } from '@/types';
 import { Badge, Button, StarRating } from '@/components/ui';
 import { Star, ArrowRight } from 'lucide-react';
+import { formatRupees } from '@/lib/utils';
 
 export interface CreatorCardProps {
   creator: Creator;
@@ -107,7 +108,7 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({
         </Badge>
         {getStatusBadge()}
         <span className="text-navy-300 font-semibold ml-auto">
-          ${creator.hourlyRate}/hr
+          {formatRupees(creator.hourlyRate)}/hr
         </span>
       </div>
 

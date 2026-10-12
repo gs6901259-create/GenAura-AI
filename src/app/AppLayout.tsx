@@ -27,6 +27,7 @@ import {
   ChevronDown,
   Check,
   X,
+  Wallet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { DemoBanner } from '@/components/demo/DemoBanner';
@@ -58,7 +59,8 @@ export function AppLayout() {
       path.startsWith('/deals') ||
       path.startsWith('/settings') ||
       path.startsWith('/notifications') ||
-      path.startsWith('/assistant')
+      path.startsWith('/assistant') ||
+      path.startsWith('/wallet')
     );
   };
 
@@ -115,6 +117,7 @@ export function AppLayout() {
     if (path.startsWith('/assistant')) return 'Aura Assistant';
     if (path.startsWith('/notifications')) return 'Platform Notifications';
     if (path.startsWith('/settings')) return 'Account Settings';
+    if (path.startsWith('/wallet')) return 'INR Wallet & Earnings';
     if (path.startsWith('/help')) return 'Help & Support';
     return 'GenAura AI';
   };
@@ -376,6 +379,17 @@ export function AppLayout() {
                     >
                       <Settings size={14} />
                       <span>Account Settings</span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setShowUserMenu(false);
+                        navigate(ROUTES.wallet);
+                      }}
+                      className="w-full flex items-center gap-2.5 px-3 py-1.5 text-xs text-emerald-300 hover:bg-emerald-500/10 rounded-lg"
+                    >
+                      <Wallet size={14} className="text-emerald-400" />
+                      <span>INR Wallet & Earnings</span>
                     </button>
 
                     <button

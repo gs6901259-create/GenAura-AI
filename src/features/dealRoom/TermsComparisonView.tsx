@@ -1,6 +1,7 @@
 import React from 'react';
 import { DealTerms, DealTermsDiff } from '@/types/deal';
 import { diffDealTerms } from '@/services/dealService';
+import { formatRupees } from '@/lib/utils';
 import {
   DollarSign,
   Calendar,
@@ -73,7 +74,7 @@ export const TermsComparisonView: React.FC<TermsComparisonViewProps> = ({
               Proposed Budget
             </span>
             <div className="text-base font-bold text-navy-100 font-mono">
-              ${originalTerms.budget.toLocaleString()} {originalTerms.currency}
+              {formatRupees(originalTerms.budget)} {originalTerms.currency || 'INR'}
             </div>
           </div>
 
@@ -183,12 +184,12 @@ export const TermsComparisonView: React.FC<TermsComparisonViewProps> = ({
             </div>
             <div className="flex items-center gap-2 mt-1">
               <span className="text-base font-bold font-mono text-white">
-                ${proposedTerms.budget.toLocaleString()} {proposedTerms.currency}
+                {formatRupees(proposedTerms.budget)} {proposedTerms.currency || 'INR'}
               </span>
               {diff.budgetChanged && (
                 <span className="text-xs font-mono text-amber-400 flex items-center gap-1">
                   <ArrowRight className="h-3 w-3" />
-                  from ${originalTerms.budget.toLocaleString()}
+                  from {formatRupees(originalTerms.budget)}
                 </span>
               )}
             </div>
