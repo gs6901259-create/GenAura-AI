@@ -341,6 +341,7 @@ export interface AppStore {
   activeBriefId?:    BriefId | null;
   authUser?:         AuthUser | null;
   isAuthenticated?:  boolean;
+  registeredUsers?:  AuthUser[];
   theme?:            ThemeMode;
   userSettings?:     UserSettings;
   notifications?:    AppNotification[];
@@ -364,7 +365,29 @@ export interface AuthUser {
   languages?: string[];
   createdAt: string;
   isDemoAccount?: boolean;
+  authProvider?: 'email' | 'google' | 'demo';
+  googleSub?: string;
 }
+
+export interface GoogleProfile {
+  sub: string;
+  email: string;
+  name: string;
+  picture: string;
+  email_verified?: boolean;
+}
+
+export type GoogleAuthState =
+  | 'idle'
+  | 'redirecting'
+  | 'authenticating'
+  | 'role_selection'
+  | 'creating_profile'
+  | 'success'
+  | 'cancelled'
+  | 'invalid_config'
+  | 'error';
+
 
 export interface UserSettings {
   profile: {
@@ -467,6 +490,7 @@ export const ROUTES = {
   dashboard:        '/',
   welcome:          '/welcome',
   login:            '/login',
+  authCallback:     '/auth/callback',
   creators:         '/creators',
   creatorDetail:    '/creators/:id',
   discovery:        '/discovery',

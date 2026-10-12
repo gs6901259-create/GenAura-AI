@@ -37,12 +37,35 @@ export function AppLayout() {
   const theme = useAppStore((s) => s.theme) || 'dark';
   const setTheme = useAppStore((s) => s.setTheme);
   const authUser = useAppStore((s) => s.authUser);
+  const isAuthenticated = useAppStore((s) => s.isAuthenticated);
   const currentPersona = useAppStore((s) => s.currentPersona) || 'brand';
   const setPersona = useAppStore((s) => s.setPersona);
   const logout = useAppStore((s) => s.logout);
   const creators = useAppStore((s) => s.creators);
   const notifications = useAppStore((s) => s.notifications) || [];
   const markNotificationRead = useAppStore((s) => s.markNotificationRead);
+
+  // Check if path requires authentication
+  const isProtectedPath = (path: string) => {
+    return (
+      path.startsWith('/studio') ||
+      path.startsWith('/verification') ||
+      path.startsWith('/admin') ||
+      path.startsWith('/briefs') ||
+      path.startsWith('/projects') ||
+      path.startsWith('/deals') ||
+      path.startsWith('/settings') ||
+      path.startsWith('/notifications') ||
+      path.startsWith('/assistant')
+    );
+  };
+
+  // Route protection: redirect unauthenticated users accessing protected routes to login
+  useEffect(() => {
+    if (!isAuthenticated && isProtectedPath(location.pathname)) {
+      navigate('/login', { replace: true, state: { from: location.pathname } });
+    }
+  }, [isAuthenticated, location.pathname, navigate]);
 
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showNotifMenu, setShowNotifMenu] = useState(false);

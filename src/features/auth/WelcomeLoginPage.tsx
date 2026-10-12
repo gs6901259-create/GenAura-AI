@@ -5,11 +5,15 @@
  * particle glow, glassmorphism, 3 animated highlights, and
  * complete authentication panel (Sign In, Register, Forgot Password, Demo Quick-Login).
  */
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppStore } from '@/lib/store';
 import { DEFAULT_DEMO_USERS } from '@/data/authAndSettingsDefaults';
-import { UserPersona, AuthUser, ROUTES } from '@/types';
+import { UserPersona, AuthUser, ROUTES, GoogleProfile } from '@/types';
+import { GoogleAuthButton } from './GoogleAuthButton';
+import { GoogleConfigModal } from './GoogleConfigModal';
+import { RoleSelectionModal } from './RoleSelectionModal';
+import { googleAuthService } from '@/services/googleAuthService';
 import {
   Sparkles,
   ArrowRight,
@@ -33,8 +37,20 @@ import { cn } from '@/lib/utils';
 export function WelcomeLoginPage() {
   const navigate = useNavigate();
   const login = useAppStore((s) => s.login);
+  const registerUser = useAppStore((s) => s.registerUser);
+  const getRegisteredUserByGoogleSub = useAppStore((s) => s.getRegisteredUserByGoogleSub);
+  const getRegisteredUserByEmail = useAppStore((s) => s.getRegisteredUserByEmail);
   const authUser = useAppStore((s) => s.authUser);
   const isAuthenticated = useAppStore((s) => s.isAuthenticated);
+
+  // Auto-redirect if already authenticated
+  useEffect(() => {
+    if (isAuthenticated && authUser) {
+      if (authUser.role === 'creator') navigate(ROUTES.studio, { replace: true });
+      else if (authUser.role === 'admin') navigate(ROUTES.adminVerification, { replace: true });
+      else navigate(ROUTES.dashboard, { replace: true });
+    }
+  }, [isAuthenticated, authUser, navigate]);
 
   // Auth Card State
   const [authTab, setAuthTab] = useState<'signin' | 'register'>('signin');
@@ -44,6 +60,11 @@ export function WelcomeLoginPage() {
   const [name, setName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+
+  // Google OAuth State
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [showGoogleConfigModal, setShowGoogleConfigModal] = useState(false);
+  const [pendingGoogleProfile, setPendingGoogleProfile] = useState<GoogleProfile | null>(null);
 
   // Status & Feedback
   const [error, setError] = useState<string | null>(null);
@@ -146,6 +167,7 @@ export function WelcomeLoginPage() {
         createdAt: new Date().toISOString(),
       };
 
+      registerUser(newUser);
       login(newUser);
       setIsLoading(false);
       setSuccessMessage(`Account created successfully as ${role.toUpperCase()}!`);
@@ -155,6 +177,61 @@ export function WelcomeLoginPage() {
         else navigate(ROUTES.dashboard);
       }, 600);
     }, 600);
+  };
+
+  // Google OAuth Initiator
+  const handleGoogleAuth = async (mode: 'signin' | 'signup') => {
+    setError(null);
+    setIsGoogleLoading(true);
+
+    try {
+      const config = googleAuthService.getConfigStatus();
+      if (!config.configured) {
+        setIsGoogleLoading(false);
+        setShowGoogleConfigModal(true);
+        return;
+      }
+
+      const { authUrl } = await googleAuthService.startOAuthFlow({
+        mode,
+        preselectedRole: mode === 'signup' ? role : undefined,
+      });
+
+      window.location.href = authUrl;
+    } catch (err) {
+      setIsGoogleLoading(false);
+      setError(err instanceof Error ? err.message : 'Failed to connect to Google authentication.');
+    }
+  };
+
+  const handleSimulateGoogleDemo = (targetRole: UserPersona) => {
+    setShowGoogleConfigModal(false);
+    setIsGoogleLoading(true);
+
+    setTimeout(() => {
+      const { user } = googleAuthService.simulateGoogleAuth(targetRole);
+      login(user);
+      setIsGoogleLoading(false);
+      setSuccessMessage(`Signed in via Google Demo as ${user.name}!`);
+      setTimeout(() => {
+        if (targetRole === 'creator') navigate(ROUTES.studio);
+        else navigate(ROUTES.dashboard);
+      }, 400);
+    }, 400);
+  };
+
+  // New Google Sign-Up Role Confirmation
+  const handleRoleSelected = (chosenRole: UserPersona) => {
+    if (!pendingGoogleProfile) return;
+    const newUser = googleAuthService.createAccountFromGoogle(pendingGoogleProfile, chosenRole);
+    registerUser(newUser);
+    login(newUser);
+    setPendingGoogleProfile(null);
+    setSuccessMessage(`Welcome to GenAura AI, ${newUser.name}!`);
+    setTimeout(() => {
+      if (chosenRole === 'creator') navigate(ROUTES.studio);
+      else navigate(ROUTES.dashboard);
+    }, 400);
   };
 
   const handleForgotPassword = (e: React.FormEvent) => {
@@ -398,7 +475,22 @@ export function WelcomeLoginPage() {
 
             {/* Form Mode: Sign In */}
             {authTab === 'signin' ? (
-              <form onSubmit={handleSignIn} className="space-y-4">
+              <div className="space-y-4">
+                <GoogleAuthButton
+                  mode="signin"
+                  isLoading={isGoogleLoading}
+                  onClick={() => handleGoogleAuth('signin')}
+                />
+
+                <div className="relative flex py-1 items-center">
+                  <div className="flex-grow border-t border-navy-800"></div>
+                  <span className="flex-shrink mx-3 text-[10px] text-navy-400 uppercase tracking-wider font-semibold">
+                    Or sign in with email
+                  </span>
+                  <div className="flex-grow border-t border-navy-800"></div>
+                </div>
+
+                <form onSubmit={handleSignIn} className="space-y-4">
                 <div className="space-y-1.5 text-left">
                   <label className="text-xs font-medium text-navy-300">Email Address</label>
                   <div className="relative">
@@ -476,8 +568,24 @@ export function WelcomeLoginPage() {
                   )}
                 </button>
               </form>
-            ) : (
-              /* Form Mode: Registration */
+            </div>
+          ) : (
+            /* Form Mode: Registration */
+            <div className="space-y-4">
+              <GoogleAuthButton
+                mode="signup"
+                isLoading={isGoogleLoading}
+                onClick={() => handleGoogleAuth('signup')}
+              />
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-navy-800"></div>
+                <span className="flex-shrink mx-3 text-[10px] text-navy-400 uppercase tracking-wider font-semibold">
+                  Or sign up with email
+                </span>
+                <div className="flex-grow border-t border-navy-800"></div>
+              </div>
+
               <form onSubmit={handleRegister} className="space-y-4">
                 <div className="space-y-1.5 text-left">
                   <label className="text-xs font-medium text-navy-300">Choose Role</label>
@@ -577,7 +685,8 @@ export function WelcomeLoginPage() {
                   {isLoading ? <span>Creating Account...</span> : <span>Join GenAura AI</span>}
                 </button>
               </form>
-            )}
+            </div>
+          )}
 
             {/* Security Notice */}
             <div className="pt-2 text-[11px] text-navy-500 text-center leading-normal">
@@ -635,6 +744,23 @@ export function WelcomeLoginPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Google OAuth Setup / Diagnostic Modal */}
+      <GoogleConfigModal
+        isOpen={showGoogleConfigModal}
+        onClose={() => setShowGoogleConfigModal(false)}
+        onSimulateDemo={handleSimulateGoogleDemo}
+      />
+
+      {/* Google New Account Role Designation Modal */}
+      {pendingGoogleProfile && (
+        <RoleSelectionModal
+          isOpen={!!pendingGoogleProfile}
+          googleProfile={pendingGoogleProfile}
+          isLoading={isGoogleLoading}
+          onSelectRole={handleRoleSelected}
+        />
       )}
     </div>
   );

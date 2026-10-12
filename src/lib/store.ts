@@ -161,9 +161,13 @@ interface AppStoreActions {
   setTheme: (theme: ThemeMode) => void;
 
   // Authentication
-  login:          (user: AuthUser) => void;
-  logout:         () => void;
-  updateAuthUser: (patch: Partial<AuthUser>) => void;
+  login:                        (user: AuthUser) => void;
+  logout:                       () => void;
+  updateAuthUser:               (patch: Partial<AuthUser>) => void;
+  registerUser:                 (user: AuthUser) => void;
+  getRegisteredUserByGoogleSub: (sub: string) => AuthUser | undefined;
+  getRegisteredUserByEmail:     (email: string) => AuthUser | undefined;
+  linkGoogleAccount:            (userId: string, googleSub: string) => void;
 
   // User Settings
   updateUserSettings: (patch: Partial<UserSettings>) => void;
@@ -206,6 +210,7 @@ export const useAppStore = create<FullStore>()(
       theme:             'dark',
       authUser:          DEFAULT_DEMO_USERS.brand,
       isAuthenticated:   true,
+      registeredUsers:   Object.values(DEFAULT_DEMO_USERS),
       userSettings:      DEFAULT_USER_SETTINGS,
       notifications:     SEED_NOTIFICATIONS,
       chatMessages:      INITIAL_ASSISTANT_MESSAGES,
@@ -222,6 +227,35 @@ export const useAppStore = create<FullStore>()(
       updateAuthUser: (patch) =>
         set((s) => ({
           authUser: s.authUser ? { ...s.authUser, ...patch } : null,
+          registeredUsers: (s.registeredUsers || []).map((u) =>
+            u.id === s.authUser?.id ? { ...u, ...patch } : u
+          ),
+        })),
+      registerUser: (user) =>
+        set((s) => ({
+          registeredUsers: [
+            ...(s.registeredUsers || []).filter((u) => u.id !== user.id),
+            user,
+          ],
+          authUser: user,
+          isAuthenticated: true,
+          currentPersona: user.role,
+        })),
+      getRegisteredUserByGoogleSub: (sub) =>
+        (get().registeredUsers || []).find((u) => u.googleSub === sub),
+      getRegisteredUserByEmail: (email) =>
+        (get().registeredUsers || []).find(
+          (u) => u.email.toLowerCase() === email.toLowerCase()
+        ),
+      linkGoogleAccount: (userId, googleSub) =>
+        set((s) => ({
+          registeredUsers: (s.registeredUsers || []).map((u) =>
+            u.id === userId ? { ...u, googleSub, authProvider: 'google' } : u
+          ),
+          authUser:
+            s.authUser?.id === userId
+              ? { ...s.authUser, googleSub, authProvider: 'google' }
+              : s.authUser,
         })),
 
       // ── User Settings ──

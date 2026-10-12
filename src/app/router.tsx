@@ -16,6 +16,7 @@ import { CreatorStudioPage } from '@/features/studio/CreatorStudioPage';
 import { AdminVerificationQueue } from '@/features/admin/AdminVerificationQueue';
 import { SettingsPage } from '@/features/settings';
 import { WelcomeLoginPage } from '@/features/auth/WelcomeLoginPage';
+import { GoogleAuthCallbackPage } from '@/features/auth/GoogleAuthCallbackPage';
 import { AuraAssistantPage } from '@/features/assistant/AuraAssistantPage';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 import { HelpPage } from '@/features/help/HelpPage';
@@ -68,6 +69,11 @@ const router = createBrowserRouter([
   {
     path: '/login',
     element: <WelcomeLoginPage />,
+    errorElement: <RouteErrorBoundary />,
+  },
+  {
+    path: '/auth/callback',
+    element: <GoogleAuthCallbackPage />,
     errorElement: <RouteErrorBoundary />,
   },
 
