@@ -19,6 +19,8 @@ import {
   Bookmark,
   FolderKanban,
   Handshake,
+  MessageSquare,
+  Wallet,
   Bot,
   Bell,
   Settings,
@@ -29,6 +31,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import { chatService } from '@/services/chatService';
 import { cn } from '@/lib/utils';
 import { ROUTES } from '@/types';
 import { useAppStore } from '@/lib/store';
@@ -60,6 +63,8 @@ export function Sidebar() {
     (c) => c.verificationStatus === 'submitted'
   ).length;
   const unreadNotifCount = notifications.filter((n) => !n.read).length;
+  const currentUserId = authUser?.id || (currentPersona === 'brand' ? 'usr_brand_1' : 'usr_creator_1');
+  const unreadChatCount = chatService.getTotalUnreadCount(currentUserId);
 
   const isCreatorHubRoute =
     location.pathname.startsWith('/studio') ||
@@ -147,6 +152,22 @@ export function Sidebar() {
       badge: 'PRO',
       badgeColor:
         'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
+    },
+    {
+      id: 'chat',
+      label: 'Workspace Chat',
+      to: ROUTES.chat,
+      icon: MessageSquare,
+      badge: unreadChatCount > 0 ? unreadChatCount : undefined,
+      badgeColor: 'bg-violet-600 text-white shadow-glow-violet',
+    },
+    {
+      id: 'wallet',
+      label: 'INR Wallet',
+      to: ROUTES.wallet,
+      icon: Wallet,
+      badge: '₹',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     },
     {
       id: 'assistant',

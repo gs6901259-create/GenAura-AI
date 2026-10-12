@@ -1,0 +1,156 @@
+/**
+ * GenAura AI — Workspace Brand–Creator Chat Initial Seed Data
+ * ============================================================
+ * Pre-seeded multi-party conversations linked to campaigns,
+ * deals, and portfolios.
+ */
+
+import { WorkspaceConversation, WorkspaceChatMessage } from '@/types/chat';
+
+export const INITIAL_SEED_CONVERSATIONS: WorkspaceConversation[] = [
+  {
+    id: 'conv_1',
+    title: 'Neon Dusk Brand Film Collaboration',
+    participantIds: ['usr_brand_1', 'usr_creator_1'],
+    participants: [
+      {
+        id: 'usr_brand_1',
+        name: 'Sarah Lin',
+        handle: '@sarahlin_growth',
+        role: 'brand',
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop',
+        verified: true,
+        isOnline: true,
+      },
+      {
+        id: 'usr_creator_1',
+        name: 'Elena Rostova',
+        handle: '@elenacreates',
+        role: 'creator',
+        avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
+        verified: true,
+        isOnline: true,
+      },
+    ],
+    unreadCountByUser: {
+      usr_brand_1: 0,
+      usr_creator_1: 1,
+    },
+    linkedDealId: 'deal-001',
+    linkedDealTitle: 'Neon Dusk Brand Film',
+    linkedBriefId: 'brief_1',
+    linkedCampaignTitle: 'Autonomous Cloud Launch 2026',
+    createdAt: '2026-10-04T10:00:00Z',
+    updatedAt: '2026-10-11T16:30:00Z',
+  },
+  {
+    id: 'conv_2',
+    title: 'Chronicles of Aether Twitch Campaign',
+    participantIds: ['usr_brand_1', 'cr_2'],
+    participants: [
+      {
+        id: 'usr_brand_1',
+        name: 'Sarah Lin',
+        handle: '@sarahlin_growth',
+        role: 'brand',
+        avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop',
+        verified: true,
+        isOnline: true,
+      },
+      {
+        id: 'cr_2',
+        name: 'Kairos Zhang',
+        handle: '@kairos_streams',
+        role: 'creator',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+        verified: true,
+        isOnline: false,
+        lastSeenAt: '1 hour ago',
+      },
+    ],
+    unreadCountByUser: {
+      usr_brand_1: 1,
+      cr_2: 0,
+    },
+    linkedDealId: 'deal-003',
+    linkedDealTitle: 'Chronicles of Aether Twitch Launch',
+    linkedBriefId: 'brief_2',
+    linkedCampaignTitle: 'Chronicles of Aether RPG',
+    createdAt: '2026-10-09T09:00:00Z',
+    updatedAt: '2026-10-11T11:20:00Z',
+  },
+];
+
+export const INITIAL_SEED_CHAT_MESSAGES: Record<string, WorkspaceChatMessage[]> = {
+  conv_1: [
+    {
+      id: 'msg_101',
+      conversationId: 'conv_1',
+      senderId: 'usr_brand_1',
+      senderName: 'Sarah Lin',
+      senderRole: 'brand',
+      senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop',
+      content: 'Hi Elena! We loved your 3D tactile animation reel. We would love to collaborate on the Neon Dusk launch.',
+      timestamp: '2026-10-04T10:05:00Z',
+      status: 'read',
+      readBy: [{ userId: 'usr_creator_1', readAt: '2026-10-04T10:12:00Z' }],
+      linkedDealId: 'deal-001',
+      linkedDealTitle: 'Neon Dusk Brand Film',
+    },
+    {
+      id: 'msg_102',
+      conversationId: 'conv_1',
+      senderId: 'usr_creator_1',
+      senderName: 'Elena Rostova',
+      senderRole: 'creator',
+      senderAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop',
+      content: 'Thank you Sarah! Excited to work together. I checked the brief and proposed milestone deliveries in the Deal Room.',
+      timestamp: '2026-10-04T10:30:00Z',
+      status: 'read',
+      readBy: [{ userId: 'usr_brand_1', readAt: '2026-10-04T10:35:00Z' }],
+    },
+    {
+      id: 'msg_103',
+      conversationId: 'conv_1',
+      senderId: 'usr_brand_1',
+      senderName: 'Sarah Lin',
+      senderRole: 'brand',
+      senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop',
+      content: 'Milestone 1 payment of ₹40,000.00 has been sent via INR Wallet. Looking forward to the storyboard draft!',
+      timestamp: '2026-10-11T16:30:00Z',
+      status: 'delivered',
+      readBy: [],
+      linkedDealId: 'deal-001',
+      linkedDealTitle: 'Neon Dusk Brand Film',
+      linkedPaymentId: 'txn_102',
+    },
+  ],
+  conv_2: [
+    {
+      id: 'msg_201',
+      conversationId: 'conv_2',
+      senderId: 'usr_brand_1',
+      senderName: 'Sarah Lin',
+      senderRole: 'brand',
+      senderAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop',
+      content: 'Hello Kairos, we sent over the revised proposal terms for the 2-hour launch stream.',
+      timestamp: '2026-10-11T10:00:00Z',
+      status: 'read',
+      readBy: [{ userId: 'cr_2', readAt: '2026-10-11T10:30:00Z' }],
+    },
+    {
+      id: 'msg_202',
+      conversationId: 'conv_2',
+      senderId: 'cr_2',
+      senderName: 'Kairos Zhang',
+      senderRole: 'creator',
+      senderAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop',
+      content: 'Hey Sarah! I submitted a counteroffer adjusting the deliverable rights to 90 days. Check the Smart Deal Room.',
+      timestamp: '2026-10-11T11:20:00Z',
+      status: 'delivered',
+      readBy: [],
+      linkedDealId: 'deal-003',
+      linkedDealTitle: 'Chronicles of Aether Twitch Launch',
+    },
+  ],
+};

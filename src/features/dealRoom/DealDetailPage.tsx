@@ -27,6 +27,8 @@ import {
   AlertTriangle,
   Lock,
   UserCheck,
+  MessageSquare,
+  Wallet,
 } from 'lucide-react';
 import { Button } from '@/components/ui';
 
@@ -390,6 +392,29 @@ export const DealDetailPage: React.FC = () => {
                 Approve & Complete Deal
               </Button>
             )}
+
+            {/* Direct 1-Click Milestone Payout in INR */}
+            {simulatedRole === 'brand' && (deal.status === 'accepted' || deal.status === 'in_progress') && (
+              <Button
+                icon={Wallet}
+                onClick={() => navigate(`/wallet?action=send&recipient=${deal.creator.id}&deal=${deal.id}`)}
+                fullWidth
+                className="bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-950/40"
+              >
+                Pay via INR Wallet (₹)
+              </Button>
+            )}
+
+            {/* Workspace Chat Integration */}
+            <Button
+              variant="secondary"
+              icon={MessageSquare}
+              onClick={() => navigate(`/chat?recipient=${deal.creator.id}&deal=${deal.id}`)}
+              fullWidth
+              className="border-violet-500/40 text-violet-300 hover:bg-violet-950/30"
+            >
+              Workspace Chat
+            </Button>
           </div>
         </div>
 

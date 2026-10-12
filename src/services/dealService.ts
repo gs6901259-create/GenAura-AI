@@ -839,6 +839,13 @@ class DealService {
     this.setItem(STORAGE_KEYS.MESSAGES, INITIAL_MESSAGES);
   }
 
+  public setDealsData(deals: Deal[], activities?: DealActivity[], messages?: DealMessage[]): void {
+    if (typeof window === 'undefined') return;
+    this.setItem(STORAGE_KEYS.DEALS, deals);
+    if (activities) this.setItem(STORAGE_KEYS.ACTIVITIES, activities);
+    if (messages) this.setItem(STORAGE_KEYS.MESSAGES, messages);
+  }
+
   // ── Queries ──
 
   public getDeals(filters?: DealFilterOptions, viewerRole?: DealRole): Deal[] {
