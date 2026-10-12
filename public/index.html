@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GenAura AI | Intelligent Creator Discovery & Campaign Matching</title>
+  <link rel="stylesheet" href="app.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app">
+    <!-- TOP NAVIGATION -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="logo">
+          <div class="logo-icon">✨</div>
+          <div class="logo-text">
+            <span class="logo-title">GenAura<span class="logo-accent">AI</span></span>
+            <span class="logo-subtitle">Creator Intelligence & Match Studio</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-center">
+        <!-- BRIEF SELECTOR -->
+        <div class="brief-selector-box">
+          <span class="brief-label">🎯 Active Campaign Brief:</span>
+          <select id="activeBriefSelect" class="brief-select">
+            <!-- Populated via JS -->
+          </select>
+          <button id="viewBriefBtn" class="btn-icon" title="View Brief Details">ℹ️</button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button id="shortlistToggleBtn" class="btn btn-secondary shortlist-toggle-btn">
+          <span>📋 Shortlist</span>
+          <span id="shortlistBadgeCount" class="badge badge-accent">0</span>
+        </button>
+        <button id="resetDataBtn" class="btn btn-outline" title="Reset sample database">🔄 Reset</button>
+      </div>
+    </header>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="app-container">
+      <!-- SIDEBAR: COMBINED FILTERS -->
+      <aside class="sidebar-filters">
+        <div class="filters-header">
+          <h3>Filters & Refinement</h3>
+          <button id="clearFiltersBtn" class="btn-link">Clear all</button>
+        </div>
+
+        <!-- SEARCH INPUT -->
+        <div class="filter-group">
+          <label class="filter-label">Keyword Search</label>
+          <div class="search-input-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search by name, @handle, topic, bio..." class="input-text">
+          </div>
+        </div>
+
+        <!-- PLATFORMS FILTER -->
+        <div class="filter-group">
+          <label class="filter-label">Platforms</label>
+          <div class="checkbox-pill-grid" id="platformFilterContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- CATEGORIES FILTER -->
+        <div class="filter-group">
+          <label class="filter-label">Niche / Category</label>
+          <div class="checkbox-pill-grid" id="categoryFilterContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- FOLLOWER TIERS -->
+        <div class="filter-group">
+          <label class="filter-label">Follower Tier</label>
+          <div class="tier-checkboxes" id="tierFilterContainer">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- MIN ENGAGEMENT RATE -->
+        <div class="filter-group">
+          <div class="range-header">
+            <label class="filter-label">Min. Engagement Rate</label>
+            <span id="engagementValueDisplay" class="range-value">0%</span>
+          </div>
+          <input type="range" id="engagementSlider" min="0" max="8" step="0.5" value="0" class="range-slider">
+        </div>
+
+        <!-- MAX BUDGET -->
+        <div class="filter-group">
+          <div class="range-header">
+            <label class="filter-label">Max Rate / Deliverable</label>
+            <span id="budgetValueDisplay" class="range-value">Any</span>
+          </div>
+          <input type="range" id="budgetSlider" min="500" max="8000" step="250" value="8000" class="range-slider">
+        </div>
+
+        <!-- VERIFIED ONLY TOGGLE -->
+        <div class="filter-group filter-toggle-row">
+          <label for="verifiedOnlyCheckbox" class="filter-label" style="cursor: pointer;">Verified Creators Only</label>
+          <input type="checkbox" id="verifiedOnlyCheckbox" class="toggle-checkbox">
+        </div>
+
+        <!-- MIN BRAND SAFETY -->
+        <div class="filter-group">
+          <div class="range-header">
+            <label class="filter-label">Min Brand Safety Score</label>
+            <span id="safetyValueDisplay" class="range-value">Any</span>
+          </div>
+          <input type="range" id="safetySlider" min="80" max="99" step="1" value="80" class="range-slider">
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT: DISCOVERY RESULTS -->
+      <main class="main-content">
+        <!-- TOP TOOLBAR: RESULTS COUNT, ACTIVE CHIPS & SORTING -->
+        <div class="discovery-toolbar">
+          <div class="toolbar-left">
+            <h2 class="section-title">Creator Discovery</h2>
+            <span id="resultsCountBadge" class="results-counter">Loading creators...</span>
+          </div>
+
+          <div class="toolbar-right">
+            <label for="sortBySelect" class="sort-label">Sort by:</label>
+            <select id="sortBySelect" class="sort-select">
+              <option value="matchScore_desc">🎯 Highest Brief Match</option>
+              <option value="followers_desc">👥 Followers (High to Low)</option>
+              <option value="followers_asc">👥 Followers (Low to High)</option>
+              <option value="engagement_desc">🔥 Engagement Rate</option>
+              <option value="rate_asc">💵 Rate (Low to High)</option>
+              <option value="rate_desc">💵 Rate (High to Low)</option>
+              <option value="name_asc">🔤 Name (A - Z)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- ACTIVE FILTER CHIPS -->
+        <div id="activeFilterChips" class="active-filter-chips"></div>
+
+        <!-- BRIEF CONTEXT BANNER -->
+        <div id="briefContextBanner" class="brief-context-banner">
+          <div class="banner-icon">💡</div>
+          <div class="banner-body">
+            <strong id="briefContextTitle">AI Workflow SaaS Launch</strong>
+            <p id="briefContextDesc">Scores below evaluate real-time compatibility with this campaign brief's categories, deliverables, audience demographics, and budget.</p>
+          </div>
+        </div>
+
+        <!-- CREATOR CARDS GRID -->
+        <div id="creatorsGrid" class="creators-grid">
+          <!-- Populated dynamically via JS -->
+        </div>
+
+        <!-- EMPTY STATE (Shown when 0 results) -->
+        <div id="emptyStateContainer" class="empty-state-card" style="display: none;">
+          <div class="empty-icon">🔎</div>
+          <h3 id="emptyStateTitle" class="empty-title">No creators found</h3>
+          <p id="emptyStateMessage" class="empty-message">No creators match your current filter and search criteria.</p>
+          <p id="emptyStateSuggestion" class="empty-suggestion">Try clearing your filters or broadening your search keywords.</p>
+          <button id="emptyStateResetBtn" class="btn btn-primary">Reset All Filters</button>
+        </div>
+      </main>
+    </div>
+
+    <!-- EXPLAINABLE MATCH SCORE MODAL -->
+    <div id="matchModalOverlay" class="modal-overlay" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="modal-title-wrap">
+            <span class="modal-badge">Deterministic Explainable Scoring</span>
+            <h3 id="modalCreatorName">Elena Rostova</h3>
+            <p id="modalBriefTitle" class="modal-subtitle">Matching against: AI Workflow & SaaS Q4</p>
+          </div>
+          <button id="closeMatchModalBtn" class="modal-close">&times;</button>
+        </div>
+
+        <div class="modal-body">
+          <!-- OVERALL SCORE DISPLAY -->
+          <div class="modal-score-hero">
+            <div class="score-circle-wrapper">
+              <div id="modalScoreCircle" class="score-circle">
+                <span id="modalScoreValue" class="score-num">94%</span>
+              </div>
+            </div>
+            <div class="score-hero-details">
+              <div id="modalMatchTier" class="match-tier-badge">Exceptional Match</div>
+              <p class="score-summary-text">
+                This score is mathematically calculated based on multi-dimensional alignment with campaign criteria, weighting niche relevance, platform compatibility, demographics, and budget.
+              </p>
+            </div>
+          </div>
+
+          <!-- DETAILED FACTOR BREAKDOWN -->
+          <div class="modal-section-title">Multi-Dimensional Factor Breakdown</div>
+          <div class="factor-progress-grid" id="modalFactorBreakdown">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- REASONS & EXPLANATIONS -->
+          <div class="modal-section-title">Explainable Matching Insights</div>
+          <div class="explanations-list" id="modalExplanationsList">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="modalShortlistActionBtn" class="btn btn-primary">Add to Campaign Shortlist</button>
+          <button id="modalCloseActionBtn" class="btn btn-secondary">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SHORTLIST DRAWER -->
+    <div id="shortlistDrawer" class="shortlist-drawer">
+      <div class="drawer-header">
+        <div class="drawer-title-wrap">
+          <h3>Campaign Shortlist</h3>
+          <span id="drawerItemsCount" class="badge badge-accent">0 Creators</span>
+        </div>
+        <button id="closeDrawerBtn" class="btn-icon">&times;</button>
+      </div>
+
+      <!-- SHORTLIST AGGREGATE METRICS -->
+      <div class="drawer-metrics-bar">
+        <div class="metric-cell">
+          <span class="metric-lbl">Total Reach</span>
+          <strong id="metricTotalReach" class="metric-val">0</strong>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-lbl">Est. Combined Cost</span>
+          <strong id="metricTotalCost" class="metric-val">$0</strong>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-lbl">Avg. Engagement</span>
+          <strong id="metricAvgEngagement" class="metric-val">0%</strong>
+        </div>
+        <div class="metric-cell">
+          <span class="metric-lbl">Avg. Match Score</span>
+          <strong id="metricAvgMatch" class="metric-val">N/A</strong>
+        </div>
+      </div>
+
+      <!-- SHORTLIST ACTION BUTTONS -->
+      <div class="drawer-actions-bar">
+        <button id="exportCsvBtn" class="btn btn-outline btn-sm">📥 Export CSV</button>
+        <button id="clearShortlistBtn" class="btn btn-link btn-sm">Clear Shortlist</button>
+      </div>
+
+      <!-- SHORTLIST ITEMS LIST -->
+      <div id="shortlistItemsContainer" class="drawer-items-list">
+        <!-- Populated via JS -->
+      </div>
+    </div>
+    <div id="drawerOverlay" class="drawer-backdrop" style="display: none;"></div>
+
+    <!-- BRIEF DETAILS MODAL -->
+    <div id="briefModalOverlay" class="modal-overlay" style="display: none;">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3 id="briefModalTitle">Campaign Brief Details</h3>
+          <button id="closeBriefModalBtn" class="modal-close">&times;</button>
+        </div>
+        <div class="modal-body" id="briefModalContent">
+          <!-- Populated via JS -->
+        </div>
+        <div class="modal-footer">
+          <button id="closeBriefModalActionBtn" class="btn btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
