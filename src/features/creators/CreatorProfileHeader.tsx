@@ -9,6 +9,7 @@ import {
   Edit3,
   Plus,
   Send,
+  Handshake,
 } from 'lucide-react';
 
 export interface CreatorProfileHeaderProps {
@@ -19,6 +20,7 @@ export interface CreatorProfileHeaderProps {
   onShortlist?: () => void;
   isShortlisted?: boolean;
   onContact?: () => void;
+  onInitiateDeal?: () => void;
 }
 
 const AVATAR_FALLBACK = 'https://api.dicebear.com/7.x/avataaars/svg?seed=fallback';
@@ -31,6 +33,7 @@ export const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
   onShortlist,
   isShortlisted = false,
   onContact,
+  onInitiateDeal,
 }) => {
   const [avatarError, setAvatarError] = useState(false);
 
@@ -121,6 +124,16 @@ export const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
       <div className="flex md:flex-col gap-2.5 w-full md:w-auto shrink-0 pt-2 md:pt-0">
         {isOwner ? (
           <>
+            {onInitiateDeal && (
+              <Button
+                icon={Handshake}
+                onClick={onInitiateDeal}
+                fullWidth
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-violet-950/40"
+              >
+                Initiate Deal
+              </Button>
+            )}
             {onEditProfile && (
               <Button variant="secondary" icon={Edit3} onClick={onEditProfile} fullWidth>
                 Edit Profile
@@ -134,8 +147,18 @@ export const CreatorProfileHeader: React.FC<CreatorProfileHeaderProps> = ({
           </>
         ) : (
           <>
+            {onInitiateDeal && (
+              <Button
+                icon={Handshake}
+                onClick={onInitiateDeal}
+                fullWidth
+                className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-md shadow-violet-950/40"
+              >
+                Initiate Deal
+              </Button>
+            )}
             {onContact && (
-              <Button icon={Send} onClick={onContact} fullWidth>
+              <Button variant="secondary" icon={Send} onClick={onContact} fullWidth>
                 Request Project
               </Button>
             )}

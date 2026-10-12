@@ -474,6 +474,8 @@ export const ROUTES = {
   briefEdit:        '/briefs/:id/edit',
   projects:         '/projects',
   projectDetail:    '/projects/:id',
+  deals:            '/deals',
+  dealDetail:       '/deals/:id',
   assistant:        '/assistant',
   notifications:    '/notifications',
   settings:         '/settings',
@@ -481,3 +483,5 @@ export const ROUTES = {
 } as const;
 
 export type RoutePath = typeof ROUTES[keyof typeof ROUTES];
+
+export * from './deal';
