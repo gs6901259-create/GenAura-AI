@@ -11,7 +11,6 @@
     "test": "tsx --test tests/discoveryService.test.js tests/persistenceAndTypes.test.js tests/scoringEngine.test.js tests/shortlistService.test.js tests/collaborationWorkflow.test.ts tests/creatorStudioAndVerification.test.ts tests/premiumFeaturesAndAssistant.test.ts tests/smartDealRoom.test.ts tests/creatorHubAndVoice.test.ts tests/demoMode.test.ts tests/walletAndPrivacyChat.test.ts tests/googleAuth.test.ts tests/inrPaymentsAndWallet.test.ts tests/globalDiscoveryAndMultilingual.test.ts"
   },
   "dependencies": {
-    "@rolldown/binding-win32-x64-msvc": "^1.2.13",
     "@tailwindcss/vite": "^4.3.3",
     "clsx": "^2.1.1",
     "lucide-react": "^1.55.0",
