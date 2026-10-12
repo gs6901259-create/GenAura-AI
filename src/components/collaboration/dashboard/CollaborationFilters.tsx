@@ -48,12 +48,12 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-slate-800 bg-slate-900/60 p-4 backdrop-blur-md">
+    <div className="glass-card flex flex-col gap-4 rounded-2xl p-4">
       {/* Top row: search + action button */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         {/* Search Bar */}
         <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-navy-400" />
           <input
             type="text"
             value={filters.search || ''}
@@ -61,12 +61,12 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
               onFilterChange({ ...filters, search: e.target.value })
             }
             placeholder="Search by creator name, @handle, project title, or tags..."
-            className="w-full rounded-xl border border-slate-800 bg-slate-950/80 py-2.5 pl-10 pr-4 text-xs text-slate-200 placeholder-slate-500 transition-colors focus:border-purple-500 focus:outline-none focus:ring-1 focus:ring-purple-500"
+            className="glass-input w-full rounded-xl py-2.5 pl-10 pr-4 text-xs transition-colors focus:border-purple-500 focus:outline-none"
           />
           {filters.search && (
             <button
               onClick={() => onFilterChange({ ...filters, search: '' })}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-navy-400 hover:text-navy-200"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -76,14 +76,14 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
         {/* View Toggle & New Request Button */}
         <div className="flex items-center gap-2.5">
           {/* Kanban / Table Toggle */}
-          <div className="flex items-center rounded-xl border border-slate-800 bg-slate-950 p-1">
+          <div className="flex items-center rounded-xl border border-navy-700/60 bg-navy-950/70 p-1">
             <button
               onClick={() => onViewModeChange('kanban')}
               title="Kanban Board View"
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
                 viewMode === 'kanban'
                   ? 'bg-purple-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-navy-400 hover:text-navy-200'
               }`}
             >
               <Kanban className="h-3.5 w-3.5" />
@@ -92,10 +92,10 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
             <button
               onClick={() => onViewModeChange('table')}
               title="Table List View"
-              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-all ${
+              className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-semibold transition-all ${
                 viewMode === 'table'
                   ? 'bg-purple-600 text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+                  : 'text-navy-400 hover:text-navy-200'
               }`}
             >
               <TableIcon className="h-3.5 w-3.5" />
@@ -115,8 +115,8 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
       </div>
 
       {/* Bottom Filter Controls */}
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-800/60">
-        <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 pr-1">
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-navy-700/60">
+        <div className="flex items-center gap-1.5 text-xs font-semibold text-navy-400 pr-1">
           <Filter className="h-3.5 w-3.5 text-purple-400" />
           <span>Filters:</span>
         </div>
@@ -130,7 +130,7 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
               status: e.target.value as CollaborationStatus | 'all',
             })
           }
-          className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none"
+          className="glass-dropdown rounded-lg px-2.5 py-1.5 text-xs focus:border-purple-500 focus:outline-none"
         >
           <option value="all">All Statuses</option>
           {Object.entries(STATUS_METADATA).map(([st, meta]) => (
@@ -146,7 +146,7 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
           onChange={(e) =>
             onFilterChange({ ...filters, briefId: e.target.value })
           }
-          className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none max-w-[200px] truncate"
+          className="glass-dropdown rounded-lg px-2.5 py-1.5 text-xs focus:border-purple-500 focus:outline-none max-w-[200px] truncate"
         >
           <option value="all">All Campaign Briefs</option>
           {briefs.map((b) => (
@@ -165,7 +165,7 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
               platform: e.target.value as any,
             })
           }
-          className="rounded-lg border border-slate-800 bg-slate-950 px-2.5 py-1.5 text-xs text-slate-300 focus:border-purple-500 focus:outline-none"
+          className="glass-dropdown rounded-lg px-2.5 py-1.5 text-xs focus:border-purple-500 focus:outline-none"
         >
           <option value="all">All Platforms</option>
           <option value="youtube">YouTube</option>
@@ -178,7 +178,7 @@ export const CollaborationFilters: React.FC<CollaborationFiltersProps> = ({
         {hasActiveFilters && (
           <button
             onClick={clearFilters}
-            className="flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-rose-400 hover:bg-rose-950/40 hover:text-rose-300 transition-colors"
+            className="flex items-center gap-1 rounded-lg px-2.5 py-1 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
           >
             <X className="h-3 w-3" />
             Clear filters

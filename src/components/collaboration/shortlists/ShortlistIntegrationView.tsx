@@ -51,30 +51,30 @@ export const ShortlistIntegrationView: React.FC<ShortlistIntegrationViewProps> =
   return (
     <div className="space-y-6">
       {/* Shortlist Integration Header */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-md sm:flex-row sm:items-center sm:justify-between">
+      <div className="glass-card flex flex-col gap-3 rounded-2xl p-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <div className="flex items-center gap-2">
             <span className="rounded-lg bg-purple-950/80 p-1.5 text-purple-400 border border-purple-800">
               <Users className="h-4 w-4" />
             </span>
-            <h2 className="text-lg font-bold text-white">
+            <h2 className="text-lg font-bold text-navy-50">
               Discovery Shortlist Integration
             </h2>
-            <span className="rounded-full bg-slate-800 px-2.5 py-0.5 text-[11px] font-semibold text-slate-300">
+            <span className="rounded-full bg-navy-800 px-2.5 py-0.5 text-[11px] font-semibold text-navy-300">
               Contract: IDiscoveryService
             </span>
           </div>
-          <p className="mt-1 text-xs text-slate-400 max-w-2xl">
+          <p className="mt-1 text-xs text-navy-400 max-w-2xl">
             Vetted creator shortlists synced from the Discovery Owner engine. Directly transition shortlisted talent into formal brief-linked project requests.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400">Select Shortlist:</span>
+          <span className="text-xs text-navy-400 font-medium">Select Shortlist:</span>
           <select
             value={selectedShortlistId}
             onChange={(e) => setSelectedShortlistId(e.target.value)}
-            className="rounded-xl border border-slate-700 bg-slate-950 px-3 py-2 text-xs font-semibold text-white focus:border-purple-500 focus:outline-none"
+            className="glass-dropdown rounded-xl px-3 py-2 text-xs font-semibold focus:border-purple-500 focus:outline-none"
           >
             {shortlists.map((sl) => (
               <option key={sl.id} value={sl.id}>
