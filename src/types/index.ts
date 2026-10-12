@@ -119,6 +119,33 @@ export type ContentType =
   | 'email-campaign'
   | 'other';
 
+export interface CreativeBriefDeliverable {
+  id: string;
+  format: string;
+  channel: string;
+  quantity: number;
+  requirements: string;
+}
+
+export interface CreativeBriefPillar {
+  pillar: string;
+  description: string;
+  hookExamples: string[];
+}
+
+export interface CreativeBriefContent {
+  executiveSummary: string;
+  targetPersonaNarrative: string;
+  keyMessagingPillars: CreativeBriefPillar[];
+  contentStrategy: string;
+  kpiBenchmarks: Array<{ metric: string; target: string }>;
+  budgetBreakdown: Array<{ category: string; amount: number; percentage: number }>;
+  creatorCriteria?: { tier: string; minEngagementRate: string; aestheticVibe: string; niche: string[] };
+  generatedAt: string;
+  isDemoGenerated: boolean;
+  modelNotice: string;
+}
+
 export interface CreativeBrief {
   id: BriefId;
   title: string;
@@ -140,6 +167,30 @@ export interface CreativeBrief {
   attachments?: string[];        // URLs
   preferredCategories?: CreatorCategory[];
   notes?: string;
+
+  // GenAura AI BriefGen extensions
+  brandName?: string;
+  category?: string;
+  objective?: string;
+  targetAudience?: {
+    demographics: string;
+    ageRange: string;
+    locations?: string[];
+    interests?: string[];
+    painPoints?: string[];
+  };
+  channels?: string[];
+  deliverables?: CreativeBriefDeliverable[];
+  tone?: string;
+  guidelines?: {
+    dos: string[];
+    donts: string[];
+    mandatoryMentions?: string[];
+    hashtags?: string[];
+    callToAction?: string;
+  };
+  generatedContent?: CreativeBriefContent;
+  isDemoGenerated?: boolean;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
