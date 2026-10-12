@@ -19,6 +19,8 @@ import { WelcomeLoginPage } from '@/features/auth/WelcomeLoginPage';
 import { AuraAssistantPage } from '@/features/assistant/AuraAssistantPage';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 import { HelpPage } from '@/features/help/HelpPage';
+import { ChatPage } from '@/features/chat/ChatPage';
+import { WalletPage } from '@/features/wallet/WalletPage';
 import { Button } from '@/components/ui';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
@@ -106,6 +108,14 @@ const router = createBrowserRouter([
       // Smart Deal Room
       { path: 'deals',     element: <DealRoomOverview /> },
       { path: 'deals/:id', element: <DealDetailPage /> },
+
+      // Workspace Chat
+      { path: 'chat',     element: <ChatPage /> },
+      { path: 'chat/:id', element: <ChatPage /> },
+
+      // INR Wallet & Earnings
+      { path: 'wallet',      element: <WalletPage /> },
+      { path: 'wallet/:tab', element: <WalletPage /> },
 
       // Aura AI Assistant
       { path: 'assistant', element: <AuraAssistantPage /> },
