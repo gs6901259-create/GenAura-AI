@@ -128,9 +128,21 @@ export interface Creator {
   email?: string;
   username?: string;
   country?: string;
+  stateProvince?: string;
   city?: string;
   preferredRegions?: string[];
   languages?: string[];
+  languagesSpoken?: string[];
+  contentLanguages?: string[];
+  deliverableLanguages?: string[];
+  primaryMarket?: string;
+  audienceRegions?: string[];
+  audienceDistribution?: Record<string, number>;
+  preferredCampaignRegions?: string[];
+  preferredCollaborationLanguages?: string[];
+  remoteAvailable?: boolean;
+  regionalExpertise?: string[];
+  culturalSpecialization?: string | string[];
   contentFormats?: string[];
   yearsExperience?: number;
   audienceSize?: number;
@@ -140,6 +152,42 @@ export interface Creator {
   collaborationTypes?: string[];
   verificationStatus?: VerificationStatus;
   verificationReport?: CreatorVerificationReport;
+  toneProfile?: CreatorToneProfile;
+}
+
+export type ContentTone =
+  | 'Professional'
+  | 'Friendly'
+  | 'Educational'
+  | 'Inspirational'
+  | 'Humorous'
+  | 'Playful'
+  | 'Premium or luxury'
+  | 'Minimalist'
+  | 'Bold'
+  | 'Energetic'
+  | 'Authentic or conversational'
+  | 'Storytelling'
+  | 'Youthful'
+  | 'Traditional or heritage-focused'
+  | 'Other';
+
+export interface CreatorToneProfile {
+  declaredTones: ContentTone[];
+  primaryTone?: string;
+  secondaryTones?: string[];
+  customToneDescription?: string;
+  communicationStyle?: string;
+  typicalFormat?: string;
+  orientation?: 'educational' | 'entertainment' | 'hybrid';
+  formalityLevel?: 'casual' | 'balanced' | 'formal';
+  energyLevel?: 'relaxed' | 'moderate' | 'high-energy';
+  storytellingStyle?: string;
+  brandAlignment?: string[];
+  confidenceScore?: number; // 0-100
+  isAIExtracted?: boolean;
+  evidenceSummary?: string;
+  lastAnalyzedAt?: string;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -210,6 +258,8 @@ export interface CreativeBriefContent {
   kpiBenchmarks: Array<{ metric: string; target: string }>;
   budgetBreakdown: Array<{ category: string; amount: number; percentage: number }>;
   creatorCriteria?: { tier: string; minEngagementRate: string; aestheticVibe: string; niche: string[] };
+  timelinePhases?: Array<{ phase: string; duration: string; milestone: string }>;
+  creatorRequirements?: string[];
   generatedAt: string;
   isDemoGenerated: boolean;
   modelNotice: string;
@@ -260,7 +310,90 @@ export interface CreativeBrief {
   };
   generatedContent?: CreativeBriefContent;
   isDemoGenerated?: boolean;
+
+  // Multilingual & Global extensions
+  briefLanguage?: string;
+  regionalPreferences?: RegionalCampaignPreferences;
+  tonePreferences?: CampaignTonePreferences;
+  languageVariants?: BriefLanguageVariant[];
 }
+
+export interface CampaignTonePreferences {
+  desiredTones?: ContentTone[];
+  campaignTone?: string;
+  customToneDescription?: string;
+  formalityLevel?: 'casual' | 'balanced' | 'formal' | 'conversational';
+  energyLevel?: 'relaxed' | 'moderate' | 'high-energy' | 'low' | 'balanced' | 'high';
+  preferredWritingStyle?: string;
+  visualStyle?: string;
+  brandVoiceDescription?: string;
+  brandVoiceKeywords?: string[];
+  requiredPhrases?: string[];
+  avoidPhrases?: string[];
+  culturalGuidelines?: string;
+  mandatoryTone?: boolean;
+}
+
+export interface RegionalCampaignPreferences {
+  targetCountries?: string[];
+  targetRegions?: string[];
+  targetCities?: string[];
+  intendedAudienceRegions?: string[];
+  preferredContentLanguages?: string[];
+  preferredCreatorLocation?: string;
+  remoteAllowed?: boolean;
+  regionalCulturalContext?: string;
+  regionalThemes?: string[];
+  localTerminology?: string | string[];
+  regionalEventsOrHolidays?: string;
+  localizedCallToAction?: string;
+  regionSpecificFormats?: string[];
+  regionalBudgetInINR?: number;
+  regionalBudgetAllocation?: Record<string, number>;
+  shippingConstraints?: string;
+  mandatoryLanguages?: boolean;
+  mandatoryRegions?: boolean;
+}
+
+export interface BriefLanguageVariant {
+  id: string;
+  sourceBriefId: BriefId;
+  languageCode: string; // e.g. 'hi', 'te', 'ta', 'es', etc.
+  languageName: string;
+  localizedTitle?: string;
+  executiveSummary?: string;
+  localizedCallToAction?: string;
+  culturalAdaptationNotes?: string;
+  region?: string;
+  version: number;
+  createdAt: string;
+  updatedAt: string;
+  translatedBy: 'gemini' | 'deterministic-multilingual-engine';
+  content: CreativeBriefContent;
+  localizationNotes?: string[];
+  culturalAdaptations?: string[];
+  isHumanReviewed?: boolean;
+}
+
+export interface AuraMatchWeights {
+  nicheRelevance: number;        // 25% (0.25)
+  audienceTargetFit: number;     // 20% (0.20)
+  languageCompatibility: number;  // 15% (0.15)
+  toneCompatibility: number;     // 15% (0.15)
+  budgetCompatibility: number;   // 10% (0.10)
+  platformFormatFit: number;     // 10% (0.10)
+  regionalExperience: number;    // 5%  (0.05)
+}
+
+export const DEFAULT_AURA_MATCH_WEIGHTS: AuraMatchWeights = {
+  nicheRelevance: 0.25,
+  audienceTargetFit: 0.20,
+  languageCompatibility: 0.15,
+  toneCompatibility: 0.15,
+  budgetCompatibility: 0.10,
+  platformFormatFit: 0.10,
+  regionalExperience: 0.05,
+};
 
 // ────────────────────────────────────────────────────────────────────────────
 // Shortlist Entry (Member 3)

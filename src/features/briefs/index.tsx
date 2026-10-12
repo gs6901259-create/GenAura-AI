@@ -29,14 +29,27 @@ import {
   Users,
   ArrowLeft,
   Save,
+  Globe,
+  Languages,
+  MapPin,
+  Layers,
+  Check,
+  ArrowRightLeft,
+  BookOpen,
+  AlertCircle,
+  Split,
+  X,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import { formatRupees } from '@/lib/utils';
+import { formatRupees, cn } from '@/lib/utils';
 import {
   CreativeBrief,
   BriefStatus,
   ContentType,
   asBriefId,
+  RegionalCampaignPreferences,
+  CampaignTonePreferences,
+  BriefLanguageVariant,
 } from '@/types';
 import {
   PageHeader,
@@ -48,6 +61,13 @@ import {
 } from '@/components/ui';
 import { generateDeterministicBriefContent } from './deterministicGenerator';
 import { DemoBadgeBanner } from './DemoBadgeBanner';
+import {
+  multilingualBriefService,
+  SUPPORTED_BRIEF_LANGUAGES,
+  SupportedLanguage,
+  BriefComparisonResult,
+} from '@/services/multilingualBriefService';
+import { STANDARD_CONTENT_TONES } from '@/services/toneMatchingService';
 
 // ────────────────────────────────────────────────────────────────────────────
 // Presets for rapid demo form pre-fill
@@ -421,6 +441,23 @@ export function BriefNewPage() {
   const [callToAction, setCallToAction] = useState('Start your 30-day free trial');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // ── Language & Regional Intelligence (18 Languages) ──
+  const [briefLanguageCode, setBriefLanguageCode] = useState('en');
+  const [targetCountries, setTargetCountries] = useState('India');
+  const [targetRegions, setTargetRegions] = useState('Pan-India (Tier 1 & Tier 2 Hubs)');
+  const [preferredLanguages, setPreferredLanguages] = useState<string[]>(['Hindi', 'English']);
+  const [regionalThemes, setRegionalThemes] = useState('Festive Season & Modern Tech Lifestyle');
+  const [localTerminology, setLocalTerminology] = useState('');
+  const [localizedCTA, setLocalizedCTA] = useState('');
+  const [formalityLevel, setFormalityLevel] = useState<'casual' | 'conversational' | 'formal'>('conversational');
+  const [energyLevel, setEnergyLevel] = useState<'low' | 'balanced' | 'high'>('balanced');
+
+  const toggleLanguage = (lang: string) => {
+    setPreferredLanguages((prev) =>
+      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
+    );
+  };
+
   const handleApplyPreset = (presetId: string) => {
     const p = PRESETS.find((item) => item.id === presetId);
     if (!p) return;
@@ -437,6 +474,35 @@ export function BriefNewPage() {
     setCallToAction(p.data.callToAction);
     setRequiredSkills(p.data.requiredSkills.join(', '));
     setErrors({});
+
+    if (presetId === 'saas-launch') {
+      setBriefLanguageCode('en');
+      setTargetCountries('India, USA, UK');
+      setTargetRegions('Metropolitan Tech Hubs');
+      setPreferredLanguages(['English']);
+      setRegionalThemes('Modern Remote Engineering & Asynchronous Productivity');
+      setLocalizedCTA('Start your 30-day extended trial today with code AURA26');
+      setFormalityLevel('conversational');
+      setEnergyLevel('balanced');
+    } else if (presetId === 'skincare-glow') {
+      setBriefLanguageCode('hi');
+      setTargetCountries('India');
+      setTargetRegions('Delhi-NCR, Mumbai, Bangalore, Pune');
+      setPreferredLanguages(['Hindi', 'English']);
+      setRegionalThemes('Festive Glow & Winter Barrier Defense');
+      setLocalizedCTA('Use code GLOWUP for 20% off at lumiglow.in');
+      setFormalityLevel('casual');
+      setEnergyLevel('balanced');
+    } else if (presetId === 'fitness-challenge') {
+      setBriefLanguageCode('en');
+      setTargetCountries('India');
+      setTargetRegions('Bangalore, Hyderabad, Mumbai, Delhi');
+      setPreferredLanguages(['English', 'Hindi']);
+      setRegionalThemes('New Year transformation & fitness consistency');
+      setLocalizedCTA('Download ApexPulse today for a 14-day free trial');
+      setFormalityLevel('casual');
+      setEnergyLevel('high');
+    }
   };
 
   const validate = (): boolean => {
@@ -455,10 +521,29 @@ export function BriefNewPage() {
     if (!validate()) return;
 
     const now = new Date().toISOString();
+    const langInfo = SUPPORTED_BRIEF_LANGUAGES.find((l) => l.code === briefLanguageCode) || SUPPORTED_BRIEF_LANGUAGES[0];
+
+    const regionalPreferences: RegionalCampaignPreferences = {
+      targetCountries: targetCountries.split(',').map((s) => s.trim()).filter(Boolean),
+      targetRegions: targetRegions.split(',').map((s) => s.trim()).filter(Boolean),
+      preferredContentLanguages: preferredLanguages,
+      regionalThemes: regionalThemes ? regionalThemes.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      localTerminology: localTerminology ? localTerminology.split(',').map((s) => s.trim()).filter(Boolean) : [],
+      localizedCallToAction: localizedCTA || callToAction,
+      regionalBudgetAllocation: { [targetCountries || 'India']: budgetMax },
+    };
+
+    const tonePreferences: CampaignTonePreferences = {
+      campaignTone: tone,
+      formalityLevel,
+      energyLevel,
+      brandVoiceKeywords: [tone, category],
+    };
+
     let generatedContent = undefined;
 
     if (withAI) {
-      generatedContent = generateDeterministicBriefContent({
+      const detailed = multilingualBriefService.generateDetailedBrief({
         title,
         brandName,
         category,
@@ -467,18 +552,47 @@ export function BriefNewPage() {
         demographics,
         painPoints,
         budgetTotal: budgetMax,
-        currency: 'USD',
+        currency: 'INR',
         channels,
         tone,
         startDate,
         deadline,
-        callToAction,
+        callToAction: localizedCTA || callToAction,
+        languageCode: briefLanguageCode,
+        regionalPreferences,
+        tonePreferences,
       });
+
+      generatedContent = {
+        ...detailed.structuredContent,
+        executiveSummary: detailed.executiveSummary,
+        targetPersonaNarrative: detailed.targetAudience,
+        keyMessagingPillars: detailed.keyMessaging || [
+          {
+            pillar: 'Core Solution & Authenticity',
+            description: detailed.executiveSummary,
+            hookExamples: [
+              `"If you're still dealing with ${painPoints.split(',')[0] || 'this issue'}, watch this immediately..."`,
+              `"Here is what happened when I tested ${brandName} for 7 days straight:"`,
+            ],
+          },
+        ],
+        timelinePhases: [
+          { phase: 'Creator Outreach & Briefing', duration: 'Week 1', milestone: 'Creators selected & contracts signed' },
+          { phase: 'Content Production & Review', duration: 'Week 2', milestone: 'Drafts approved by brand' },
+          { phase: 'Campaign Go-Live & Tracking', duration: 'Weeks 3-4', milestone: 'Content published & metrics analyzed' },
+        ],
+        creatorRequirements: [
+          `Fluent in ${preferredLanguages.join(', ')}`,
+          `Audience concentrated in ${targetCountries}`,
+          `Style matching ${tone} tone with ${formalityLevel} delivery`,
+        ],
+      };
     }
 
     const newBrief: CreativeBrief = {
       id: asBriefId(`b-${Date.now()}`),
-      title,
+      title: `${title} [${langInfo.name}]`,
       brandName,
       category,
       contentType,
@@ -498,18 +612,22 @@ export function BriefNewPage() {
       updatedAt: now,
       channels,
       tone,
+      briefLanguage: langInfo.name,
+      regionalPreferences,
+      tonePreferences,
       targetAudience: {
         demographics,
         ageRange: '20-45',
         painPoints: [painPoints],
       },
       guidelines: {
-        dos: ['Highlight genuine product value', 'Include clear CTA in caption'],
-        donts: ['No unverified claims', 'Do not mention competitors'],
-        callToAction,
+        dos: ['Highlight genuine product value', `Include clear CTA: ${localizedCTA || callToAction}`],
+        donts: ['No unverified claims', 'Do not mention direct competitors'],
+        callToAction: localizedCTA || callToAction,
       },
       generatedContent,
       isDemoGenerated: withAI,
+      languageVariants: [],
     };
 
     addBrief(newBrief);
@@ -528,7 +646,7 @@ export function BriefNewPage() {
           </button>
           <h1 className="text-2xl font-bold text-navy-50">Create Campaign Brief</h1>
           <p className="text-xs text-navy-400 mt-1">
-            Configure campaign parameters or synthesize a brief instantly via the deterministic template engine.
+            Configure campaign parameters, target geography, multilingual requirements, and synthesize briefs with deterministic AI.
           </p>
         </div>
 
@@ -540,7 +658,7 @@ export function BriefNewPage() {
             Save Draft
           </Button>
           <Button icon={Sparkles} onClick={() => handleSubmit(true)}>
-            Generate (Demo AI)
+            Generate Multilingual Brief (AI)
           </Button>
         </div>
       </div>
@@ -568,10 +686,11 @@ export function BriefNewPage() {
 
       {/* Form Fields */}
       <div className="space-y-6">
+        {/* Card 1: Overview & Primary Language */}
         <Card className="p-6 space-y-4">
           <h2 className="text-base font-bold text-navy-50 flex items-center gap-2">
             <span className="h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">1</span>
-            Campaign Overview
+            Campaign Overview & Primary Brief Language
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -597,6 +716,21 @@ export function BriefNewPage() {
                 className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-violet-500"
               />
               {errors.brandName && <span className="text-rose-400 text-xs mt-1 block">{errors.brandName}</span>}
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Primary Brief Language (18 Supported) *</label>
+              <select
+                value={briefLanguageCode}
+                onChange={(e) => setBriefLanguageCode(e.target.value)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 focus:outline-none focus:border-violet-500"
+              >
+                {SUPPORTED_BRIEF_LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.name} — {l.nativeName} {l.isRegionalIndian ? '(Regional Indian)' : '(Global)'}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -629,10 +763,122 @@ export function BriefNewPage() {
           </div>
         </Card>
 
+        {/* Card 2: Regional Preferences & Cultural Context */}
+        <Card className="p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-navy-50 flex items-center gap-2">
+              <span className="h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">2</span>
+              Regional Preferences & Cultural Context
+            </h2>
+            <span className="text-[11px] text-cyan-400 font-medium flex items-center gap-1">
+              <Globe size={13} /> Intended Audience Geography vs Creator Base
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Target Countries</label>
+              <input
+                type="text"
+                placeholder="e.g. India, United States"
+                value={targetCountries}
+                onChange={(e) => setTargetCountries(e.target.value)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-violet-500"
+              />
+              <p className="text-[11px] text-navy-500 mt-1">Countries where the intended audience is located.</p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Target Regions / States / Hubs</label>
+              <input
+                type="text"
+                placeholder="e.g. Pan-India, Tier 1 Metros, Maharashtra"
+                value={targetRegions}
+                onChange={(e) => setTargetRegions(e.target.value)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-violet-500"
+              />
+              <p className="text-[11px] text-navy-500 mt-1">Specific regional markets or urban concentrations.</p>
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">
+                Preferred Content Languages (Creators must deliver in)
+              </label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {[
+                  'Hindi',
+                  'English',
+                  'Telugu',
+                  'Tamil',
+                  'Kannada',
+                  'Malayalam',
+                  'Bengali',
+                  'Marathi',
+                  'Gujarati',
+                  'Spanish',
+                  'French',
+                ].map((lang) => {
+                  const isSelected = preferredLanguages.includes(lang);
+                  return (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => toggleLanguage(lang)}
+                      className={cn(
+                        'px-2.5 py-1 rounded-full text-xs font-medium border flex items-center gap-1 cursor-pointer transition-colors',
+                        isSelected
+                          ? 'bg-violet-600 text-white border-violet-500'
+                          : 'bg-navy-900 text-navy-400 border-navy-800 hover:text-navy-200'
+                      )}
+                    >
+                      {isSelected && <Check size={11} />}
+                      {lang}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Regional Themes / Cultural Occasions</label>
+              <input
+                type="text"
+                placeholder="e.g. Festive Season, Back to Campus, IPL"
+                value={regionalThemes}
+                onChange={(e) => setRegionalThemes(e.target.value)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-violet-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Localized Call-to-Action (CTA)</label>
+              <input
+                type="text"
+                placeholder="e.g. Abhi order karein aur paayein 20% discount"
+                value={localizedCTA}
+                onChange={(e) => setLocalizedCTA(e.target.value)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-violet-500"
+              />
+            </div>
+
+            <div className="md:col-span-2">
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Vernacular Slang / Local Terminology to Include or Avoid</label>
+              <input
+                type="text"
+                placeholder="e.g. Include friendly everyday greetings; Avoid formal corporate jargon"
+                value={localTerminology}
+                onChange={(e) => setLocalTerminology(e.target.value)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 placeholder-navy-500 focus:outline-none focus:border-violet-500"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Card 3: Audience, Tone & Voice */}
         <Card className="p-6 space-y-4">
           <h2 className="text-base font-bold text-navy-50 flex items-center gap-2">
-            <span className="h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">2</span>
-            Audience & Tone
+            <span className="h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">3</span>
+            Audience Demographics & Brand Tone
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -647,17 +893,43 @@ export function BriefNewPage() {
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Voice & Tone</label>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Campaign Tone</label>
               <select
                 value={tone}
                 onChange={(e) => setTone(e.target.value)}
                 className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 focus:outline-none focus:border-violet-500"
               >
-                <option value="Educational & Authoritative">Educational & Authoritative</option>
-                <option value="Authentic & Relatable">Authentic & Relatable</option>
-                <option value="High Energy & Bold">High Energy & Bold</option>
-                <option value="Humorous & Entertaining">Humorous & Entertaining</option>
-                <option value="Aspirational & Luxury">Aspirational & Luxury</option>
+                {STANDARD_CONTENT_TONES.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Formality Level</label>
+              <select
+                value={formalityLevel}
+                onChange={(e) => setFormalityLevel(e.target.value as any)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 focus:outline-none focus:border-violet-500"
+              >
+                <option value="casual">Casual (Friendly, colloquial, relatable)</option>
+                <option value="conversational">Conversational (Warm, balanced, peer-to-peer)</option>
+                <option value="formal">Formal (Professional, authoritative, corporate)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-navy-300 mb-1.5">Energy Cadence</label>
+              <select
+                value={energyLevel}
+                onChange={(e) => setEnergyLevel(e.target.value as any)}
+                className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3.5 py-2 text-sm text-navy-100 focus:outline-none focus:border-violet-500"
+              >
+                <option value="low">Low (Calm, soothing, intimate, reflective)</option>
+                <option value="balanced">Balanced (Engaging, steady, clear)</option>
+                <option value="high">High (Energetic, urgent, enthusiastic, fast-paced)</option>
               </select>
             </div>
 
@@ -673,10 +945,11 @@ export function BriefNewPage() {
           </div>
         </Card>
 
+        {/* Card 4: Budget & Flight Timeline */}
         <Card className="p-6 space-y-4">
           <h2 className="text-base font-bold text-navy-50 flex items-center gap-2">
-            <span className="h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">3</span>
-            Budget & Flight Timeline
+            <span className="h-5 w-5 rounded-full bg-violet-600 text-white text-xs flex items-center justify-center">4</span>
+            Budget in Indian Rupees (₹ INR) & Flight Window
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -736,7 +1009,7 @@ export function BriefNewPage() {
             Save as Draft
           </Button>
           <Button icon={Sparkles} onClick={() => handleSubmit(true)}>
-            Generate Complete Brief (Demo AI Engine)
+            Generate Complete Multilingual Brief (AI)
           </Button>
         </div>
       </div>
@@ -745,7 +1018,7 @@ export function BriefNewPage() {
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Brief Detail & Editor Page
+// Brief Detail & Editor Page (With Multilingual Intelligence & Comparison)
 // ────────────────────────────────────────────────────────────────────────────
 export function BriefDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -762,6 +1035,14 @@ export function BriefDetailPage() {
   const [editTitle, setEditTitle] = useState(() => brief?.title || '');
   const [editExecSummary, setEditExecSummary] = useState(() => brief?.generatedContent?.executiveSummary || '');
   const [editMaxBudget, setEditMaxBudget] = useState(() => brief?.budget.max || 0);
+
+  // Multilingual Translation & Comparison Modals
+  const [isTranslateModalOpen, setIsTranslateModalOpen] = useState(false);
+  const [targetTranslateLang, setTargetTranslateLang] = useState('hi');
+  const [translationNotes, setTranslationNotes] = useState('');
+  const [isComparisonModalOpen, setIsComparisonModalOpen] = useState(false);
+  const [comparisonVariant, setComparisonVariant] = useState<BriefLanguageVariant | null>(null);
+  const [comparisonResult, setComparisonResult] = useState<BriefComparisonResult | null>(null);
 
   if (!brief) {
     return (
@@ -824,19 +1105,45 @@ export function BriefDetailPage() {
     setTimeout(() => setCopiedHook(null), 2000);
   };
 
+  const handleCreateVariant = () => {
+    const variant = multilingualBriefService.createLanguageVariant(
+      brief,
+      targetTranslateLang,
+      translationNotes || undefined
+    );
+    const existing = brief.languageVariants || [];
+    updateBrief(brief.id, {
+      languageVariants: [...existing.filter((v) => v.languageCode !== targetTranslateLang), variant],
+      updatedAt: new Date().toISOString(),
+    });
+    setIsTranslateModalOpen(false);
+    setTranslationNotes('');
+  };
+
+  const handleOpenComparison = (variant: BriefLanguageVariant) => {
+    const res = multilingualBriefService.compareVariants(brief, variant);
+    setComparisonVariant(variant);
+    setComparisonResult(res);
+    setIsComparisonModalOpen(true);
+  };
+
   const handleExportMarkdown = () => {
     const md = `# BRIEF: ${brief.title.toUpperCase()}
 Brand: ${brief.brandName || 'N/A'}
+Language: ${brief.briefLanguage || 'English'}
 Status: ${brief.status}
 Budget: ₹${brief.budget.max.toLocaleString('en-IN')} ${brief.budget.currency || 'INR'}
 Timeline: ${brief.timeline.startDate} to ${brief.timeline.deadline}
 
-${brief.isDemoGenerated ? '⚡ DEMO-MODE GENERATION (Deterministic Template Engine - No API Credentials)\n' : ''}
+${brief.isDemoGenerated ? '⚡ DEMO-MODE GENERATION (Deterministic Multilingual AI - 18 Languages)\n' : ''}
 ## Executive Summary
 ${brief.generatedContent?.executiveSummary || brief.description}
 
-## Target Audience
+## Target Audience & Regional Nuance
 ${brief.generatedContent?.targetPersonaNarrative || brief.targetAudience?.demographics || 'N/A'}
+Target Countries: ${brief.regionalPreferences?.targetCountries?.join(', ') || 'N/A'}
+Target Regions: ${brief.regionalPreferences?.targetRegions?.join(', ') || 'N/A'}
+Content Languages: ${brief.regionalPreferences?.preferredContentLanguages?.join(', ') || 'N/A'}
 
 ## Key Messaging Pillars
 ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.pillar}\n${p.description}\nHooks:\n${p.hookExamples.map((h) => `- ${h}`).join('\n')}`).join('\n\n') || 'N/A'}
@@ -852,6 +1159,8 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
     document.body.removeChild(link);
   };
 
+  const variants = brief.languageVariants || [];
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 pb-16">
       {/* Navigation & Actions Bar */}
@@ -864,6 +1173,14 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
         </button>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" icon={Languages} onClick={() => setIsTranslateModalOpen(true)}>
+            Translate / Localize Brief
+          </Button>
+          {variants.length > 0 && (
+            <Button variant="secondary" icon={Split} onClick={() => handleOpenComparison(variants[0])}>
+              Compare Versions ({variants.length})
+            </Button>
+          )}
           <Button variant="secondary" icon={Download} onClick={handleExportMarkdown}>
             Export .MD
           </Button>
@@ -903,9 +1220,12 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
               <Badge variant={brief.status === 'published' ? 'success' : 'warning'}>
                 ● {brief.status}
               </Badge>
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-violet-600/20 text-violet-300 border border-violet-500/30">
+                <Languages size={12} /> {brief.briefLanguage || 'English'}
+              </span>
               {brief.isDemoGenerated && (
                 <Badge variant="violet">
-                  ⚡ Demo AI Output
+                  ⚡ Multilingual AI Output
                 </Badge>
               )}
             </div>
@@ -926,7 +1246,7 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
 
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <span className="text-[10px] text-navy-400 uppercase font-semibold block">Budget Envelope</span>
+              <span className="text-[10px] text-navy-400 uppercase font-semibold block">Budget Ceiling</span>
               {isEditing ? (
                 <input
                   type="number"
@@ -954,6 +1274,52 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
         {brief.isDemoGenerated && <DemoBadgeBanner />}
       </Card>
 
+      {/* Multilingual Variants & Localization Hub Strip */}
+      {variants.length > 0 && (
+        <Card className="p-4 bg-navy-950/70 border border-violet-500/30 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Languages size={16} className="text-violet-400" />
+              <h3 className="text-xs font-bold text-navy-100 uppercase tracking-wider">
+                Linked Language Variants ({variants.length})
+              </h3>
+            </div>
+            <span className="text-[11px] text-emerald-400 font-medium">
+              ✓ Canonical Campaign ID & INR Budget Intact
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {variants.map((v) => (
+              <div
+                key={v.languageCode}
+                className="bg-navy-900 border border-navy-800 rounded-lg p-3 space-y-2 hover:border-violet-500/50 transition-colors"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-violet-300 flex items-center gap-1.5">
+                    <Globe size={13} /> {v.languageName}
+                  </span>
+                  <Badge variant="outline" size="xs">
+                    {v.languageCode.toUpperCase()}
+                  </Badge>
+                </div>
+                <p className="text-xs font-semibold text-navy-100 line-clamp-1">{v.localizedTitle}</p>
+                <p className="text-[11px] text-navy-400 line-clamp-2">{v.executiveSummary}</p>
+                <div className="flex items-center justify-between pt-1 text-[11px]">
+                  <span className="text-navy-500">CTA: {v.localizedCallToAction || 'Default'}</span>
+                  <button
+                    onClick={() => handleOpenComparison(v)}
+                    className="text-violet-400 hover:text-violet-300 font-medium flex items-center gap-1 cursor-pointer"
+                  >
+                    <Split size={12} /> Compare
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {/* Detail Sections Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Strategic Brief */}
@@ -963,7 +1329,7 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold text-navy-100 flex items-center gap-2">
                 <Target size={16} className="text-violet-400" />
-                Strategic Executive Summary
+                Strategic Executive Summary ({brief.briefLanguage || 'English'})
               </h2>
             </div>
             {isEditing ? (
@@ -978,6 +1344,56 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
                 {brief.generatedContent?.executiveSummary || brief.description}
               </p>
             )}
+          </Card>
+
+          {/* Regional Preferences & Cultural Context Card */}
+          <Card className="p-6 space-y-3">
+            <h2 className="text-sm font-bold text-navy-100 flex items-center gap-2">
+              <Globe size={16} className="text-cyan-400" />
+              Regional Preferences & Cultural Context
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-1">
+              <div className="bg-navy-950 p-3 rounded-lg border border-navy-800">
+                <span className="text-[11px] font-semibold text-navy-400 uppercase block mb-1">
+                  Target Countries
+                </span>
+                <span className="text-navy-100 font-medium">
+                  {brief.regionalPreferences?.targetCountries?.join(', ') || 'India, Global'}
+                </span>
+              </div>
+              <div className="bg-navy-950 p-3 rounded-lg border border-navy-800">
+                <span className="text-[11px] font-semibold text-navy-400 uppercase block mb-1">
+                  Target Regions / Metros
+                </span>
+                <span className="text-navy-100 font-medium">
+                  {brief.regionalPreferences?.targetRegions?.join(', ') || 'Metropolitan Tier 1/2 Cities'}
+                </span>
+              </div>
+              <div className="bg-navy-950 p-3 rounded-lg border border-navy-800">
+                <span className="text-[11px] font-semibold text-navy-400 uppercase block mb-1">
+                  Required Content Languages
+                </span>
+                <span className="text-emerald-400 font-medium">
+                  {brief.regionalPreferences?.preferredContentLanguages?.join(', ') || brief.briefLanguage || 'English'}
+                </span>
+              </div>
+              <div className="bg-navy-950 p-3 rounded-lg border border-navy-800">
+                <span className="text-[11px] font-semibold text-navy-400 uppercase block mb-1">
+                  Regional Themes & Occasions
+                </span>
+                <span className="text-amber-300 font-medium">
+                  {brief.regionalPreferences?.regionalThemes?.join(', ') || 'Modern Lifestyle'}
+                </span>
+              </div>
+              <div className="md:col-span-2 bg-navy-950 p-3 rounded-lg border border-navy-800">
+                <span className="text-[11px] font-semibold text-navy-400 uppercase block mb-1">
+                  Localized Call-to-Action (CTA)
+                </span>
+                <span className="text-cyan-300 font-semibold">
+                  "{brief.regionalPreferences?.localizedCallToAction || brief.guidelines?.callToAction || 'Visit official link'}"
+                </span>
+              </div>
+            </div>
           </Card>
 
           {/* Target Persona Narrative */}
@@ -1049,31 +1465,31 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
           </Card>
         </div>
 
-        {/* Right 1 Col: KPIs, Budget, Matching Readiness */}
+        {/* Right 1 Col: KPIs, Budget in INR, Matching Readiness */}
         <div className="space-y-6">
           {/* Creator Matching Readiness Card (Interoperability with Discovery) */}
           <Card className="p-5 space-y-3 border-violet-500/40 bg-gradient-to-br from-navy-900 to-violet-950/20">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-navy-100 flex items-center gap-1.5">
-                <Sparkles size={14} className="text-violet-400" /> Matching Readiness
+                <Sparkles size={14} className="text-violet-400" /> 7-Factor AuraMatch Readiness
               </span>
               <Badge variant="success">100% Ready</Badge>
             </div>
             <p className="text-xs text-navy-300 leading-relaxed">
-              This campaign brief has complete deliverables and budget contracts ready for creator matching.
+              This campaign brief has complete language, regional requirements, and INR budget contracts ready for creator discovery.
             </p>
-            <Link to="/discovery">
+            <Link to={`/discovery?brief=${brief.id}`}>
               <Button size="sm" icon={ExternalLink} className="w-full mt-2">
                 Match Creators in Discovery
               </Button>
             </Link>
           </Card>
 
-          {/* Budget Allocation Breakdown */}
+          {/* Budget Allocation Breakdown in INR */}
           {brief.generatedContent?.budgetBreakdown && (
             <Card className="p-5 space-y-3">
               <h3 className="text-xs font-bold text-navy-100 flex items-center gap-1.5">
-                <DollarSign size={14} className="text-emerald-400" /> Budget Allocation
+                <DollarSign size={14} className="text-emerald-400" /> Budget Allocation (₹ INR)
               </h3>
               <div className="space-y-3 pt-1">
                 {brief.generatedContent.budgetBreakdown.map((item, idx) => (
@@ -1081,7 +1497,7 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
                     <div className="flex justify-between text-xs">
                       <span className="text-navy-300">{item.category}</span>
                       <span className="font-semibold text-navy-100">
-                        ${item.amount.toLocaleString()} ({item.percentage}%)
+                        {formatRupees(item.amount)} ({item.percentage}%)
                       </span>
                     </div>
                     <div className="h-1.5 w-full bg-navy-950 rounded-full overflow-hidden">
@@ -1114,6 +1530,177 @@ ${brief.generatedContent?.keyMessagingPillars.map((p, i) => `### ${i + 1}. ${p.p
           )}
         </div>
       </div>
+
+      {/* ── Translation Modal ── */}
+      {isTranslateModalOpen && (
+        <div className="fixed inset-0 z-50 bg-navy-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-navy-900 border border-navy-700 rounded-xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-navy-50 flex items-center gap-2">
+                <Languages size={18} className="text-violet-400" />
+                Translate / Localize Campaign Brief
+              </h3>
+              <button
+                onClick={() => setIsTranslateModalOpen(false)}
+                className="text-navy-400 hover:text-navy-200"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <p className="text-xs text-navy-300">
+              Generate a linked localized variant in another language. Preserves the canonical campaign ID and INR budget.
+            </p>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-navy-300 mb-1.5">
+                  Select Target Language (18 Supported)
+                </label>
+                <select
+                  value={targetTranslateLang}
+                  onChange={(e) => setTargetTranslateLang(e.target.value)}
+                  className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3 py-2 text-xs text-navy-100 focus:outline-none focus:border-violet-500"
+                >
+                  {SUPPORTED_BRIEF_LANGUAGES.map((l) => (
+                    <option key={l.code} value={l.code}>
+                      {l.name} — {l.nativeName} {l.isRegionalIndian ? '(Regional Indian)' : '(Global)'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-navy-300 mb-1.5">
+                  Cultural Nuance Notes (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Focus on Diwali festive gifting and colloquial youth greetings"
+                  value={translationNotes}
+                  onChange={(e) => setTranslationNotes(e.target.value)}
+                  className="w-full bg-navy-950 border border-navy-800 rounded-lg px-3 py-2 text-xs text-navy-100 focus:outline-none focus:border-violet-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <Button variant="ghost" onClick={() => setIsTranslateModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button icon={Sparkles} onClick={handleCreateVariant}>
+                Generate Localized Variant
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Side-by-Side Comparison Modal ── */}
+      {isComparisonModalOpen && comparisonVariant && (
+        <div className="fixed inset-0 z-50 bg-navy-950/85 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-navy-900 border border-navy-700 rounded-2xl p-6 max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-navy-800">
+              <div className="flex items-center gap-2">
+                <Split size={20} className="text-violet-400" />
+                <div>
+                  <h3 className="text-base font-bold text-navy-50">
+                    Side-by-Side Multilingual Comparison
+                  </h3>
+                  <p className="text-xs text-navy-400">
+                    Comparing Base Brief vs {comparisonVariant.languageName} localized variant.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsComparisonModalOpen(false)}
+                className="text-navy-400 hover:text-navy-200"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Integrity Assurance Strip */}
+            <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300">
+              <span className="flex items-center gap-1.5 font-semibold">
+                <Check size={14} /> Canonical Campaign ID: {brief.id}
+              </span>
+              <span className="font-semibold">
+                Budget Preserved: {formatRupees(brief.budget.max)} INR
+              </span>
+            </div>
+
+            {/* Side-by-side Columns */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Left Column: Base Brief */}
+              <div className="bg-navy-950 border border-navy-800 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-navy-200 uppercase tracking-wider">
+                    Base Brief ({brief.briefLanguage || 'English'})
+                  </span>
+                  <Badge variant="outline" size="xs">Original</Badge>
+                </div>
+                <div>
+                  <label className="text-[11px] text-navy-400 block font-semibold">Title</label>
+                  <p className="text-sm font-bold text-navy-100">{brief.title}</p>
+                </div>
+                <div>
+                  <label className="text-[11px] text-navy-400 block font-semibold">Executive Summary</label>
+                  <p className="text-xs text-navy-300 leading-relaxed">
+                    {brief.generatedContent?.executiveSummary || brief.description}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-[11px] text-navy-400 block font-semibold">Call to Action (CTA)</label>
+                  <p className="text-xs text-cyan-400 font-mono">
+                    "{brief.guidelines?.callToAction || 'Default CTA'}"
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column: Localized Variant */}
+              <div className="bg-navy-950 border border-violet-500/30 rounded-xl p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-violet-300 uppercase tracking-wider">
+                    {comparisonVariant.languageName} ({comparisonVariant.languageCode})
+                  </span>
+                  <Badge variant="violet" size="xs">Localized Variant</Badge>
+                </div>
+                <div>
+                  <label className="text-[11px] text-navy-400 block font-semibold">Adapted Title</label>
+                  <p className="text-sm font-bold text-navy-100">{comparisonVariant.localizedTitle}</p>
+                </div>
+                <div>
+                  <label className="text-[11px] text-navy-400 block font-semibold">Executive Summary</label>
+                  <p className="text-xs text-navy-300 leading-relaxed">
+                    {comparisonVariant.executiveSummary}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-[11px] text-navy-400 block font-semibold">Localized CTA</label>
+                  <p className="text-xs text-emerald-400 font-mono">
+                    "{comparisonVariant.localizedCallToAction || 'Localized CTA'}"
+                  </p>
+                </div>
+                {comparisonVariant.culturalAdaptationNotes && (
+                  <div className="pt-2 border-t border-navy-800">
+                    <label className="text-[11px] text-navy-400 block font-semibold">Cultural Adaptation Nuances</label>
+                    <p className="text-xs text-amber-300 leading-relaxed">
+                      {comparisonVariant.culturalAdaptationNotes}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-3 border-t border-navy-800">
+              <Button variant="secondary" onClick={() => setIsComparisonModalOpen(false)}>
+                Close Comparison
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Floating Save Button if in edit mode */}
       {isEditing && (

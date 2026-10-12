@@ -32,6 +32,9 @@ import {
   HelpCircle,
   Eye,
   Award,
+  Globe,
+  Languages,
+  MapPin,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import type {
@@ -51,10 +54,11 @@ import {
   StatCard,
   EmptyState,
 } from '@/components/ui';
-import { formatUSD, cn, uid } from '@/lib/utils';
+import { formatRupees, formatUSD, cn, uid } from '@/lib/utils';
 import { profileCoachService, ProfileCoachAnalysis } from '@/services/profileCoach';
 import { verificationEngine } from '@/services/verificationEngine';
 import { VERIFICATION_RUBRIC } from '@/config/verificationRubric';
+import { STANDARD_CONTENT_TONES } from '@/services/toneMatchingService';
 
 const CATEGORIES: { label: string; value: CreatorCategory }[] = [
   { label: 'Copywriting & Content', value: 'copywriter' },
@@ -109,11 +113,23 @@ export function CreatorStudioPage() {
     category: creator?.category || 'copywriter',
     tagline: creator?.tagline || '',
     bio: creator?.bio || '',
-    country: creator?.country || 'United States',
-    city: creator?.city || 'San Francisco',
-    hourlyRate: creator?.hourlyRate || 75,
+    country: creator?.country || 'India',
+    stateProvince: creator?.stateProvince || '',
+    city: creator?.city || 'Bengaluru',
+    hourlyRate: creator?.hourlyRate || 3500,
     skills: (creator?.skills || []).join(', '),
     yearsExperience: creator?.yearsExperience || 4,
+    languagesSpoken: (creator?.languagesSpoken || ['English', 'Hindi']).join(', '),
+    contentLanguages: (creator?.contentLanguages || ['English', 'Hindi']).join(', '),
+    primaryMarket: creator?.primaryMarket || 'India & South Asia',
+    audienceRegions: (creator?.audienceRegions || ['India']).join(', '),
+    regionalExpertise: (creator?.regionalExpertise || []).join(', '),
+    culturalSpecialization: Array.isArray(creator?.culturalSpecialization)
+      ? creator.culturalSpecialization.join(', ')
+      : (creator?.culturalSpecialization || ''),
+    remoteAvailable: creator?.remoteAvailable !== false,
+    primaryTone: creator?.toneProfile?.primaryTone || 'Authentic & Relatable',
+    secondaryTones: (creator?.toneProfile?.secondaryTones || []).join(', '),
     instagram: creator?.socialLinks?.instagram || '',
     youtube: creator?.socialLinks?.youtube || '',
     linkedin: creator?.socialLinks?.linkedin || '',
@@ -157,11 +173,23 @@ export function CreatorStudioPage() {
         category: target.category,
         tagline: target.tagline,
         bio: target.bio,
-        country: target.country || 'United States',
-        city: target.city || 'San Francisco',
+        country: target.country || 'India',
+        stateProvince: target.stateProvince || '',
+        city: target.city || 'Bengaluru',
         hourlyRate: target.hourlyRate,
         skills: target.skills.join(', '),
         yearsExperience: target.yearsExperience || 3,
+        languagesSpoken: (target.languagesSpoken || ['English', 'Hindi']).join(', '),
+        contentLanguages: (target.contentLanguages || ['English', 'Hindi']).join(', '),
+        primaryMarket: target.primaryMarket || 'India & South Asia',
+        audienceRegions: (target.audienceRegions || ['India']).join(', '),
+        regionalExpertise: (target.regionalExpertise || []).join(', '),
+        culturalSpecialization: Array.isArray(target.culturalSpecialization)
+          ? target.culturalSpecialization.join(', ')
+          : (target.culturalSpecialization || ''),
+        remoteAvailable: target.remoteAvailable !== false,
+        primaryTone: target.toneProfile?.primaryTone || 'Authentic & Relatable',
+        secondaryTones: (target.toneProfile?.secondaryTones || []).join(', '),
         instagram: target.socialLinks?.instagram || '',
         youtube: target.socialLinks?.youtube || '',
         linkedin: target.socialLinks?.linkedin || '',
@@ -213,6 +241,31 @@ export function CreatorStudioPage() {
       .map((s) => s.trim())
       .filter(Boolean);
 
+    const languagesSpokenArr = formData.languagesSpoken
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const contentLanguagesArr = formData.contentLanguages
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const audienceRegionsArr = formData.audienceRegions
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const regionalExpertiseArr = formData.regionalExpertise
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    const secondaryTonesArr = formData.secondaryTones
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
     updateCreator(creator.id, {
       name: formData.name,
       handle: formData.handle,
@@ -222,12 +275,27 @@ export function CreatorStudioPage() {
       tagline: formData.tagline,
       bio: formData.bio,
       country: formData.country,
+      stateProvince: formData.stateProvince,
       city: formData.city,
       location: `${formData.city}, ${formData.country}`,
       hourlyRate: Number(formData.hourlyRate),
       skills: skillArray,
       yearsExperience: Number(formData.yearsExperience),
       collaborationTypes: collabArray,
+      languagesSpoken: languagesSpokenArr,
+      contentLanguages: contentLanguagesArr,
+      deliverableLanguages: contentLanguagesArr,
+      primaryMarket: formData.primaryMarket,
+      audienceRegions: audienceRegionsArr,
+      regionalExpertise: regionalExpertiseArr,
+      culturalSpecialization: formData.culturalSpecialization,
+      remoteAvailable: formData.remoteAvailable,
+      toneProfile: {
+        ...(creator.toneProfile || { declaredTones: [] }),
+        primaryTone: formData.primaryTone,
+        secondaryTones: secondaryTonesArr,
+        declaredTones: [formData.primaryTone as any, ...(secondaryTonesArr as any[])],
+      },
       socialLinks: {
         instagram: formData.instagram || undefined,
         youtube: formData.youtube || undefined,
@@ -540,12 +608,18 @@ export function CreatorStudioPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <Input
                   label="City"
                   placeholder="San Francisco"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                />
+                <Input
+                  label="State / Province"
+                  placeholder="California"
+                  value={formData.stateProvince}
+                  onChange={(e) => setFormData({ ...formData, stateProvince: e.target.value })}
                 />
                 <Input
                   label="Country"
@@ -568,6 +642,103 @@ export function CreatorStudioPage() {
                 value={formData.collaborationTypes}
                 onChange={(e) => setFormData({ ...formData, collaborationTypes: e.target.value })}
               />
+            </Card>
+
+            <Card className="p-6 space-y-5">
+              <h2 className="text-base font-bold text-navy-100 flex items-center gap-2">
+                <Globe size={18} className="text-cyan-400" /> Global Presence, Multilingual Fluency & Content Tone
+              </h2>
+              <p className="text-xs text-navy-400">
+                Ground your profile for AuraMatch v2.1. Specify your language capabilities, audience demographics, regional cultural specializations, and creative tone personality.
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Languages Spoken (comma separated)"
+                  placeholder="e.g. English, Hindi, Telugu"
+                  value={formData.languagesSpoken}
+                  onChange={(e) => setFormData({ ...formData, languagesSpoken: e.target.value })}
+                />
+                <Input
+                  label="Content & Deliverable Languages (comma separated)"
+                  placeholder="e.g. English, Hindi"
+                  value={formData.contentLanguages}
+                  onChange={(e) => setFormData({ ...formData, contentLanguages: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Primary Commercial Market"
+                  placeholder="e.g. India & South Asia, North America, Global"
+                  value={formData.primaryMarket}
+                  onChange={(e) => setFormData({ ...formData, primaryMarket: e.target.value })}
+                />
+                <Input
+                  label="Audience Geography / Regions (comma separated)"
+                  placeholder="e.g. India, UAE, United States"
+                  value={formData.audienceRegions}
+                  onChange={(e) => setFormData({ ...formData, audienceRegions: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Regional Content Expertise (comma separated)"
+                  placeholder="e.g. South Indian Cinema, Urban Tier-1 Tech, Silicon Valley"
+                  value={formData.regionalExpertise}
+                  onChange={(e) => setFormData({ ...formData, regionalExpertise: e.target.value })}
+                />
+                <Input
+                  label="Cultural Specializations (comma separated)"
+                  placeholder="e.g. Festive Diwali campaigns, Gen-Z vernacular meme culture"
+                  value={formData.culturalSpecialization}
+                  onChange={(e) => setFormData({ ...formData, culturalSpecialization: e.target.value })}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-semibold text-navy-300 block mb-1.5">
+                    Primary Content Tone
+                  </label>
+                  <select
+                    value={formData.primaryTone}
+                    onChange={(e) => setFormData({ ...formData, primaryTone: e.target.value })}
+                    className="w-full bg-navy-800 border border-navy-700 rounded-lg p-2.5 text-xs text-navy-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  >
+                    {STANDARD_CONTENT_TONES.map((tone) => (
+                      <option key={tone} value={tone}>
+                        {tone}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <Input
+                  label="Secondary Tones (comma separated)"
+                  placeholder="e.g. Witty & Humorous, Inspiring & Uplifting"
+                  value={formData.secondaryTones}
+                  onChange={(e) => setFormData({ ...formData, secondaryTones: e.target.value })}
+                />
+              </div>
+
+              <div className="pt-2 border-t border-navy-800 flex items-center justify-between">
+                <div>
+                  <label htmlFor="remote-avail-toggle" className="text-xs font-semibold text-navy-200 block">
+                    Available for Remote & Cross-Border Collaboration
+                  </label>
+                  <span className="text-[11px] text-navy-400">
+                    Allows international brands outside your physical location to match and hire you.
+                  </span>
+                </div>
+                <input
+                  id="remote-avail-toggle"
+                  type="checkbox"
+                  checked={formData.remoteAvailable}
+                  onChange={(e) => setFormData({ ...formData, remoteAvailable: e.target.checked })}
+                  className="h-4 w-4 rounded border-navy-700 bg-navy-800 text-violet-600 focus:ring-violet-500 cursor-pointer"
+                />
+              </div>
             </Card>
 
             <Card className="p-6 space-y-4">

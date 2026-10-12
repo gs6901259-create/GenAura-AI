@@ -104,13 +104,14 @@ Button.displayName = 'Button';
 // ──────────────────────────────────────────────────────────────────
 // Badge
 // ──────────────────────────────────────────────────────────────────
-export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'violet';
+export type BadgeVariant = 'default' | 'success' | 'warning' | 'danger' | 'info' | 'violet' | 'outline' | 'cyan' | 'secondary';
 
-interface BadgeProps {
+export interface BadgeProps {
   variant?: BadgeVariant;
   children: React.ReactNode;
   className?: string;
   dot?: boolean;
+  size?: 'xs' | 'sm' | 'md';
 }
 
 const badgeVariants: Record<BadgeVariant, string> = {
@@ -119,14 +120,18 @@ const badgeVariants: Record<BadgeVariant, string> = {
   warning: 'bg-amber-500/20 text-amber-400',
   danger:  'bg-rose-500/20 text-rose-400',
   info:    'bg-cyan-500/20 text-cyan-400',
+  cyan:    'bg-cyan-500/20 text-cyan-400',
   violet:  'bg-violet-500/20 text-violet-300',
+  outline: 'bg-transparent text-navy-300 border border-navy-700',
+  secondary: 'bg-navy-800 text-navy-300 border border-navy-700/60',
 };
 
-export function Badge({ variant = 'default', children, className, dot }: BadgeProps) {
+export function Badge({ variant = 'default', children, className, dot, size = 'sm' }: BadgeProps) {
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium',
+        'inline-flex items-center gap-1.5 rounded-full font-medium',
+        size === 'xs' ? 'px-1.5 py-0.2 text-[10px]' : 'px-2 py-0.5 text-xs',
         badgeVariants[variant],
         className
       )}

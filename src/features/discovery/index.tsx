@@ -11,8 +11,8 @@
  * - CSV export for exportable client deliverables
  * - One-click bridge to Project Collaboration (Member 5)
  */
-import { useState, useMemo } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useMemo, useEffect } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import {
   Search,
   Sparkles,
@@ -33,9 +33,17 @@ import {
   FolderKanban,
   FileText,
   RotateCcw,
+  Globe,
+  Languages,
+  MapPin,
+  Check,
+  ChevronDown,
+  ChevronUp,
+  AlertTriangle,
+  Info,
 } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
-import type { Creator, CreativeBrief, ShortlistEntry } from '@/types';
+import type { Creator, CreativeBrief, ShortlistEntry, PortfolioItem } from '@/types';
 import { asShortlistId } from '@/types';
 import {
   PageHeader,
@@ -48,278 +56,36 @@ import {
   EmptyState,
   StarRating,
 } from '@/components/ui';
-import { cn, formatUSD, formatRupees } from '@/lib/utils';
+import { cn, formatRupees } from '@/lib/utils';
+import {
+  auraMatchEngine,
+  AuraMatchAnalysis,
+  MatchExplanation,
+  AuraMatchBreakdown,
+} from '@/services/auraMatchEngine';
+import {
+  toneMatchingService,
+  STANDARD_CONTENT_TONES,
+  ToneMatchResult,
+} from '@/services/toneMatchingService';
+import { SUPPORTED_BRIEF_LANGUAGES } from '@/services/multilingualBriefService';
 
-// ────────────────────────────────────────────────────────────────────────────
-// Match Scoring Engine (Integrated from Member 3's deterministic scoring engine)
-// ────────────────────────────────────────────────────────────────────────────
-export interface MatchExplanation {
-  factor: string;
-  score: number;
-  type: 'positive' | 'neutral' | 'warning';
-  detail: string;
-}
+export type { MatchExplanation };
+export type MatchAnalysis = AuraMatchAnalysis;
 
-export interface MatchAnalysis {
-  overallScore: number;
-  matchTier: 'Exceptional Match' | 'Strong Match' | 'Moderate Match' | 'Low Match';
-  breakdown: {
-    nicheRelevance: number;       // 30%
-    audienceTargetFit: number;    // 20%
-    budgetCompatibility: number;  // 15%
-    platformFormatFit: number;    // 15%
-    portfolioRelevance: number;   // 10%
-    locationLanguageFit: number;  // 10%
-  };
-  missingCriteria: string[];
-  explanations: MatchExplanation[];
-}
-
-export function computeCreatorMatch(creator: Creator, brief: CreativeBrief | null): MatchAnalysis {
-  if (!brief) {
-    return {
-      overallScore: 84,
-      matchTier: 'Strong Match',
-      breakdown: {
-        nicheRelevance: 85,
-        audienceTargetFit: 80,
-        budgetCompatibility: 90,
-        platformFormatFit: 85,
-        portfolioRelevance: 80,
-        locationLanguageFit: 85,
-      },
-      missingCriteria: ['Select a specific campaign brief to calculate personalized alignment.'],
-      explanations: [
-        {
-          factor: 'General Profile Quality',
-          score: Math.round(creator.rating * 18),
-          type: 'positive',
-          detail: `High creator rating (${creator.rating}/5.0) across ${creator.completedProjects} verified projects.`,
-        },
-      ],
-    };
-  }
-
-  const explanations: MatchExplanation[] = [];
-  const missingCriteria: string[] = [];
-
-  // 1. Niche Relevance (30%)
-  let nicheRelevance = 45;
-  const preferredCats = brief.preferredCategories || [];
-  const requiredSkills = (brief.requiredSkills || []).map((s) => s.toLowerCase());
-  const creatorSkills = (creator.skills || []).map((s) => s.toLowerCase());
-
-  const matchingSkills = creatorSkills.filter((s) =>
-    requiredSkills.some((req) => req.includes(s) || s.includes(req))
-  );
-
-  const categoryMatch =
-    preferredCats.length === 0 ||
-    preferredCats.includes(creator.category) ||
-    preferredCats.some((c) => c.toLowerCase().includes(creator.category.toLowerCase()));
-
-  if (categoryMatch && matchingSkills.length > 0) {
-    nicheRelevance = 98;
-    explanations.push({
-      factor: 'Niche Relevance (30%)',
-      score: 98,
-      type: 'positive',
-      detail: `Direct specialty match in '${creator.category}' with ${matchingSkills.length} matching skills (${matchingSkills.slice(0, 3).join(', ')}).`,
-    });
-  } else if (categoryMatch) {
-    nicheRelevance = 85;
-    explanations.push({
-      factor: 'Niche Relevance (30%)',
-      score: 85,
-      type: 'positive',
-      detail: `Specialty aligns with target category '${creator.category}'.`,
-    });
-  } else if (matchingSkills.length > 0) {
-    nicheRelevance = 65;
-    explanations.push({
-      factor: 'Niche Relevance (30%)',
-      score: 65,
-      type: 'neutral',
-      detail: `Shares ${matchingSkills.length} requested skills, though primary category is ${creator.category}.`,
-    });
-  } else {
-    nicheRelevance = 35;
-    missingCriteria.push(`Creator category '${creator.category}' differs from requested campaign focus`);
-    explanations.push({
-      factor: 'Niche Relevance (30%)',
-      score: 35,
-      type: 'warning',
-      detail: `Category '${creator.category}' does not directly target requested campaign disciplines.`,
-    });
-  }
-
-  // 2. Audience & Target-Market Fit (20%)
-  let audienceTargetFit = 75;
-  const ratingPct = Math.min(100, Math.round((creator.rating / 5) * 100));
-  const reviewBonus = Math.min(10, Math.round(creator.reviewCount / 10));
-  audienceTargetFit = Math.min(100, ratingPct + reviewBonus);
-
-  if (creator.rating >= 4.8) {
-    explanations.push({
-      factor: 'Audience & Quality Fit (20%)',
-      score: audienceTargetFit,
-      type: 'positive',
-      detail: `Outstanding audience reception rating of ${creator.rating}★ across ${creator.reviewCount} reviews.`,
-    });
-  } else {
-    explanations.push({
-      factor: 'Audience & Quality Fit (20%)',
-      score: audienceTargetFit,
-      type: 'neutral',
-      detail: `Solid audience satisfaction rating of ${creator.rating}★.`,
-    });
-  }
-
-  // 3. Budget Compatibility (15%)
-  const maxBudget = brief.budget?.max || 5000;
-  const estimatedCost = creator.hourlyRate * 25;
-  let budgetCompatibility = 100;
-
-  if (estimatedCost <= maxBudget) {
-    budgetCompatibility = 100;
-    explanations.push({
-      factor: 'Budget Compatibility (15%)',
-      score: 100,
-      type: 'positive',
-      detail: `Estimated deliverable pricing (${formatRupees(creator.hourlyRate)}/hr) fits comfortably within campaign budget (${formatRupees(maxBudget)}).`,
-    });
-  } else if (estimatedCost <= maxBudget * 1.25) {
-    budgetCompatibility = 75;
-    missingCriteria.push(`Rate (${formatUSD(creator.hourlyRate)}/hr) slightly exceeds target budget cap`);
-    explanations.push({
-      factor: 'Budget Compatibility (15%)',
-      score: 75,
-      type: 'warning',
-      detail: `Creator rate slightly exceeds target campaign cap. Opportunity for bundle rate adjustment.`,
-    });
-  } else {
-    budgetCompatibility = 40;
-    missingCriteria.push(`Deliverable cost exceeds campaign budget by >25%`);
-    explanations.push({
-      factor: 'Budget Compatibility (15%)',
-      score: 40,
-      type: 'warning',
-      detail: `Above campaign cap ($${creator.hourlyRate}/hr vs $${maxBudget.toLocaleString()} max project budget).`,
-    });
-  }
-
-  // 4. Platform & Content-Format Fit (15%)
-  let platformFormatFit = 70;
-  const briefChannels = brief.channels || [];
-  const socialPlatforms = creator.socialLinks ? Object.keys(creator.socialLinks).map((s) => s.toLowerCase()) : [];
-
-  const platformMatches = briefChannels.filter((c) =>
-    socialPlatforms.some((p) => p.includes(c.toLowerCase()) || c.toLowerCase().includes(p))
-  );
-
-  if (platformMatches.length > 0) {
-    platformFormatFit = 95;
-    explanations.push({
-      factor: 'Platform & Format Fit (15%)',
-      score: 95,
-      type: 'positive',
-      detail: `Active on target campaign channels: ${platformMatches.join(', ')}.`,
-    });
-  } else if (socialPlatforms.length >= 2) {
-    platformFormatFit = 85;
-    explanations.push({
-      factor: 'Platform & Format Fit (15%)',
-      score: 85,
-      type: 'positive',
-      detail: `Multi-channel distribution active across ${socialPlatforms.join(', ')}.`,
-    });
-  } else {
-    platformFormatFit = 65;
-    explanations.push({
-      factor: 'Platform & Format Fit (15%)',
-      score: 65,
-      type: 'neutral',
-      detail: `Deliverable format compatible with campaign specifications.`,
-    });
-  }
-
-  // 5. Portfolio Relevance (10%)
-  const portfolioRelevance = creator.portfolioIds && creator.portfolioIds.length >= 3 ? 95 : creator.portfolioIds?.length ? 75 : 50;
-  if (creator.portfolioIds && creator.portfolioIds.length >= 3) {
-    explanations.push({
-      factor: 'Portfolio Depth & Evidence (10%)',
-      score: 95,
-      type: 'positive',
-      detail: `Verified portfolio with ${creator.portfolioIds.length} work samples demonstrating commercial versatility.`,
-    });
-  } else {
-    explanations.push({
-      factor: 'Portfolio Depth & Evidence (10%)',
-      score: portfolioRelevance,
-      type: 'neutral',
-      detail: `Portfolio contains ${creator.portfolioIds?.length || 0} work samples.`,
-    });
-  }
-
-  // 6. Location & Language Fit (10%)
-  let locationLanguageFit = 85;
-  const targetLocations = brief.targetAudience?.locations || [];
-  const matchesLocation = targetLocations.some((loc) =>
-    creator.location.toLowerCase().includes(loc.toLowerCase())
-  );
-
-  if (matchesLocation || targetLocations.length === 0) {
-    locationLanguageFit = 95;
-    explanations.push({
-      factor: 'Location & Language Fit (10%)',
-      score: 95,
-      type: 'positive',
-      detail: `Geographic market (${creator.location}) aligns with campaign distribution region.`,
-    });
-  } else {
-    locationLanguageFit = 75;
-    explanations.push({
-      factor: 'Location & Language Fit (10%)',
-      score: 75,
-      type: 'neutral',
-      detail: `Available for remote collaboration in ${creator.timezone || 'target timezone'}.`,
-    });
-  }
-
-  // Weighted overall calculation: 30% + 20% + 15% + 15% + 10% + 10% = 100%
-  const weighted =
-    nicheRelevance * 0.30 +
-    audienceTargetFit * 0.20 +
-    budgetCompatibility * 0.15 +
-    platformFormatFit * 0.15 +
-    portfolioRelevance * 0.10 +
-    locationLanguageFit * 0.10;
-
-  const overallScore = Math.min(100, Math.max(30, Math.round(weighted)));
-
-  let matchTier: MatchAnalysis['matchTier'] = 'Low Match';
-  if (overallScore >= 88) matchTier = 'Exceptional Match';
-  else if (overallScore >= 75) matchTier = 'Strong Match';
-  else if (overallScore >= 55) matchTier = 'Moderate Match';
-
-  return {
-    overallScore,
-    matchTier,
-    breakdown: {
-      nicheRelevance,
-      audienceTargetFit,
-      budgetCompatibility,
-      platformFormatFit,
-      portfolioRelevance,
-      locationLanguageFit,
-    },
-    missingCriteria,
-    explanations,
-  };
+/**
+ * Public wrapper preserving backward compatibility for other modules and legacy tests
+ */
+export function computeCreatorMatch(
+  creator: Creator,
+  brief: CreativeBrief | null,
+  portfolios: PortfolioItem[] = []
+): AuraMatchAnalysis {
+  return auraMatchEngine.computeMatch(creator, brief, portfolios);
 }
 
 // ────────────────────────────────────────────────────────────────────────────
-// Match Explanation Modal
+// Match Explanation Modal (Upgraded with 7-Factor AuraMatch & Tone Evidence)
 // ────────────────────────────────────────────────────────────────────────────
 function MatchBreakdownModal({
   creator,
@@ -336,16 +102,19 @@ function MatchBreakdownModal({
   onShortlistToggle: () => void;
   isShortlisted: boolean;
 }) {
-  const tierColor =
-    match.overallScore >= 88
-      ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
-      : match.overallScore >= 75
-      ? 'text-violet-400 bg-violet-500/10 border-violet-500/30'
-      : 'text-amber-400 bg-amber-500/10 border-amber-500/30';
+  const [activeTab, setActiveTab] = useState<'factors' | 'tone' | 'regional'>('factors');
+
+  const tierColor = !match.isFullyQualified
+    ? 'text-rose-400 bg-rose-500/10 border-rose-500/30'
+    : match.overallScore >= 88
+    ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30'
+    : match.overallScore >= 75
+    ? 'text-violet-400 bg-violet-500/10 border-violet-500/30'
+    : 'text-amber-400 bg-amber-500/10 border-amber-500/30';
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fadeIn">
-      <div className="bg-navy-900 border border-navy-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+      <div className="bg-navy-900 border border-navy-700 rounded-2xl max-w-2xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 text-navy-400 hover:text-white p-1 rounded-lg cursor-pointer"
@@ -353,6 +122,7 @@ function MatchBreakdownModal({
           <X size={20} />
         </button>
 
+        {/* Creator Info Header */}
         <div className="flex items-center gap-4 mb-5">
           <Avatar src={creator.avatarUrl} alt={creator.name} size="lg" />
           <div>
@@ -360,7 +130,9 @@ function MatchBreakdownModal({
               <h2 className="text-lg font-bold text-navy-50">{creator.name}</h2>
               {creator.verified && <CheckCircle2 size={16} className="text-cyan-400" />}
             </div>
-            <p className="text-xs text-navy-400">{creator.handle} · {creator.category}</p>
+            <p className="text-xs text-navy-400">
+              {creator.handle} · {creator.category} · {creator.location || 'Global'}
+            </p>
             {brief && (
               <p className="text-xs text-violet-300 mt-1 flex items-center gap-1 font-medium">
                 <Target size={12} /> Matching against: <span className="underline">{brief.title}</span>
@@ -369,79 +141,261 @@ function MatchBreakdownModal({
           </div>
         </div>
 
+        {/* Mandatory Constraint Violation Warning */}
+        {!match.isFullyQualified && (
+          <div className="p-3.5 rounded-xl bg-rose-500/15 border border-rose-500/40 text-xs text-rose-300 mb-4 flex items-start gap-2.5">
+            <AlertTriangle size={16} className="text-rose-400 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold uppercase tracking-wider text-[11px]">Mandatory Campaign Criteria Failed</p>
+              <ul className="list-disc pl-4 mt-1 space-y-0.5">
+                {match.mandatoryViolations.map((v, idx) => (
+                  <li key={idx}>{v}</li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        )}
+
         {/* Overall Score Banner */}
         <div className={cn('p-4 rounded-xl border flex items-center justify-between mb-5', tierColor)}>
           <div>
-            <p className="text-xs uppercase tracking-wider font-semibold opacity-80">AuraMatch 6-Factor Fit</p>
-            <p className="text-2xl font-extrabold mt-0.5">{match.overallScore}% · {match.matchTier}</p>
+            <p className="text-xs uppercase tracking-wider font-semibold opacity-80">
+              AuraMatch 7-Factor Compatibility ({match.algorithmVersion})
+            </p>
+            <p className="text-2xl font-extrabold mt-0.5">
+              {match.overallScore}% · {match.matchTier}
+            </p>
           </div>
           <div className="h-12 w-12 rounded-full border-2 border-current flex items-center justify-center font-bold text-lg">
             {match.overallScore}
           </div>
         </div>
 
-        {/* 6-Dimension Score Breakdown */}
-        <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider mb-2.5">
-          Score Breakdown by Criteria
-        </h3>
-        <div className="space-y-2.5 mb-5">
-          {[
-            { label: 'Niche Relevance (30%)', score: match.breakdown.nicheRelevance },
-            { label: 'Audience & Quality Fit (20%)', score: match.breakdown.audienceTargetFit },
-            { label: 'Budget Compatibility (15%)', score: match.breakdown.budgetCompatibility },
-            { label: 'Platform & Format Fit (15%)', score: match.breakdown.platformFormatFit },
-            { label: 'Portfolio Relevance (10%)', score: match.breakdown.portfolioRelevance },
-            { label: 'Location & Language Fit (10%)', score: match.breakdown.locationLanguageFit },
-          ].map((item) => (
-            <div key={item.label} className="text-xs">
-              <div className="flex justify-between text-navy-300 mb-1">
-                <span>{item.label}</span>
-                <span className="font-semibold text-navy-100">{item.score}/100</span>
-              </div>
-              <div className="w-full bg-navy-800 h-1.5 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full"
-                  style={{ width: `${item.score}%` }}
-                />
-              </div>
-            </div>
-          ))}
+        {/* Navigation Tabs */}
+        <div className="flex items-center gap-2 border-b border-navy-800 pb-2 mb-4 text-xs">
+          <button
+            onClick={() => setActiveTab('factors')}
+            className={cn(
+              'px-3 py-1.5 rounded-lg font-medium transition-colors',
+              activeTab === 'factors'
+                ? 'bg-violet-600/30 text-violet-300 border border-violet-500/40'
+                : 'text-navy-400 hover:text-navy-200'
+            )}
+          >
+            📊 7-Factor Breakdown
+          </button>
+          <button
+            onClick={() => setActiveTab('tone')}
+            className={cn(
+              'px-3 py-1.5 rounded-lg font-medium transition-colors',
+              activeTab === 'tone'
+                ? 'bg-violet-600/30 text-violet-300 border border-violet-500/40'
+                : 'text-navy-400 hover:text-navy-200'
+            )}
+          >
+            🎭 Tone & Style Fit ({match.breakdown.toneCompatibility}%)
+          </button>
+          <button
+            onClick={() => setActiveTab('regional')}
+            className={cn(
+              'px-3 py-1.5 rounded-lg font-medium transition-colors',
+              activeTab === 'regional'
+                ? 'bg-violet-600/30 text-violet-300 border border-violet-500/40'
+                : 'text-navy-400 hover:text-navy-200'
+            )}
+          >
+            🌍 Regional & Language Context
+          </button>
         </div>
 
-        {/* Missing or Uncertain Criteria */}
-        {match.missingCriteria.length > 0 && (
-          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 mb-4 space-y-1">
-            <p className="font-bold">Missing or Sub-optimal Criteria:</p>
-            {match.missingCriteria.map((m, idx) => (
-              <p key={idx}>• {m}</p>
-            ))}
+        {/* TAB 1: 7-FACTOR BREAKDOWN */}
+        {activeTab === 'factors' && (
+          <div className="space-y-4 mb-5">
+            <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider">
+              Normalized Factor Scores (100% Weight Sum)
+            </h3>
+            <div className="space-y-2.5">
+              {[
+                { label: 'Campaign Niche Relevance (25%)', score: match.breakdown.nicheRelevance },
+                { label: 'Audience & Target-Market Fit (20%)', score: match.breakdown.audienceTargetFit },
+                { label: 'Language Compatibility (15%)', score: match.breakdown.languageCompatibility },
+                { label: 'Campaign Tone Compatibility (15%)', score: match.breakdown.toneCompatibility },
+                { label: 'Budget Compatibility in ₹ INR (10%)', score: match.breakdown.budgetCompatibility },
+                { label: 'Platform & Format Fit (10%)', score: match.breakdown.platformFormatFit },
+                { label: 'Regional Campaign Experience (5%)', score: match.breakdown.regionalExperience },
+              ].map((item) => (
+                <div key={item.label} className="text-xs">
+                  <div className="flex justify-between text-navy-300 mb-1">
+                    <span>{item.label}</span>
+                    <span className="font-semibold text-navy-100">{item.score}/100</span>
+                  </div>
+                  <div className="w-full bg-navy-800 h-1.5 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full transition-all"
+                      style={{ width: `${item.score}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Missing Criteria */}
+            {match.missingCriteria.length > 0 && (
+              <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 mt-4 space-y-1">
+                <p className="font-bold flex items-center gap-1">
+                  <Info size={13} /> Sub-optimal or Unverified Criteria:
+                </p>
+                {match.missingCriteria.map((m, idx) => (
+                  <p key={idx}>• {m}</p>
+                ))}
+              </div>
+            )}
+
+            {/* Explanations List */}
+            <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider pt-2">
+              Explainable Factor Insights
+            </h3>
+            <div className="space-y-2">
+              {match.explanations.map((exp, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    'p-3 rounded-lg text-xs border flex items-start gap-2.5',
+                    exp.type === 'positive'
+                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
+                      : exp.type === 'warning'
+                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
+                      : 'bg-navy-800 border-navy-700 text-navy-300'
+                  )}
+                >
+                  <div className="font-bold shrink-0 mt-0.5">•</div>
+                  <div>
+                    <span className="font-bold">{exp.factor}:</span> {exp.detail}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
-        {/* Explanations List */}
-        <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider mb-2">
-          Match Insights & Rationale
-        </h3>
-        <div className="space-y-2 mb-6">
-          {match.explanations.map((exp, idx) => (
-            <div
-              key={idx}
-              className={cn(
-                'p-3 rounded-lg text-xs border flex items-start gap-2.5',
-                exp.type === 'positive'
-                  ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300'
-                  : exp.type === 'warning'
-                  ? 'bg-amber-500/10 border-amber-500/20 text-amber-300'
-                  : 'bg-navy-800 border-navy-700 text-navy-300'
+        {/* TAB 2: TONE & STYLE FIT */}
+        {activeTab === 'tone' && match.toneDetails && (
+          <div className="space-y-4 mb-5 text-xs">
+            <div className="p-3.5 rounded-xl bg-navy-800/80 border border-navy-700 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-navy-100">Tone Compatibility Score:</span>
+                <Badge variant={match.toneDetails.score >= 80 ? 'success' : 'violet'}>
+                  {match.toneDetails.score}% ({match.toneDetails.matchTier})
+                </Badge>
+              </div>
+              <p className="text-navy-400">
+                Confidence Level: <strong className="text-navy-200">{match.toneDetails.confidenceLevel}</strong> ·
+                Provenance: <span className="font-mono text-cyan-400">{match.toneDetails.provenance}</span>
+              </p>
+            </div>
+
+            {/* Matched Characteristics */}
+            <div>
+              <h4 className="font-bold text-emerald-400 mb-1.5">✓ Matched Style Characteristics:</h4>
+              {match.toneDetails.matchedCharacteristics.length > 0 ? (
+                <ul className="space-y-1 text-navy-200 pl-3">
+                  {match.toneDetails.matchedCharacteristics.map((c, i) => (
+                    <li key={i}>• {c}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-navy-500 italic pl-3">No direct tone characteristics matched.</p>
               )}
-            >
-              <div className="font-bold shrink-0 mt-0.5">•</div>
+            </div>
+
+            {/* Potential Mismatches */}
+            {match.toneDetails.potentialMismatches.length > 0 && (
               <div>
-                <span className="font-bold">{exp.factor}:</span> {exp.detail}
+                <h4 className="font-bold text-amber-400 mb-1.5">⚠ Potential Tone Variations:</h4>
+                <ul className="space-y-1 text-navy-300 pl-3">
+                  {match.toneDetails.potentialMismatches.map((m, i) => (
+                    <li key={i}>• {m}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Supporting Portfolio Samples */}
+            {match.toneDetails.supportingPortfolioExamples.length > 0 && (
+              <div>
+                <h4 className="font-bold text-cyan-400 mb-1.5">📁 Supporting Portfolio Evidence:</h4>
+                <ul className="space-y-1 text-navy-300 pl-3">
+                  {match.toneDetails.supportingPortfolioExamples.map((ex, i) => (
+                    <li key={i}>• {ex}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Missing Evidence Disclaimer */}
+            {match.toneDetails.missingEvidence.length > 0 && (
+              <div className="p-3 rounded-lg bg-navy-800 border border-navy-700/60 text-navy-400 space-y-1">
+                <p className="font-semibold text-navy-300">ℹ Insufficient Evidence Disclosures (Not Penalized as Mismatch):</p>
+                {match.toneDetails.missingEvidence.map((ev, i) => (
+                  <p key={i}>• {ev}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 3: REGIONAL & LANGUAGE CONTEXT */}
+        {activeTab === 'regional' && (
+          <div className="space-y-4 mb-5 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="p-3 rounded-xl bg-navy-800 border border-navy-700">
+                <p className="text-navy-400 text-[11px] uppercase tracking-wider font-semibold">1. Creator Physical Location</p>
+                <p className="font-bold text-navy-100 text-sm mt-0.5">
+                  📍 {creator.city ? `${creator.city}, ${creator.country || ''}` : creator.location || 'Declared Global'}
+                </p>
+                <p className="text-navy-400 text-[11px] mt-1">
+                  Timezone: {creator.timezone || 'Asia/Kolkata'} · Remote Collaboration: {creator.remoteAvailable !== false ? '✅ Available' : '❌ On-site Only'}
+                </p>
+              </div>
+
+              <div className="p-3 rounded-xl bg-navy-800 border border-navy-700">
+                <p className="text-navy-400 text-[11px] uppercase tracking-wider font-semibold">2. Creator Audience Geography</p>
+                <p className="font-bold text-navy-100 text-sm mt-0.5">
+                  👥 {creator.audienceRegions?.join(', ') || 'Estimated from profile'}
+                </p>
+                <p className="text-navy-400 text-[11px] mt-1">
+                  Primary Market: {creator.primaryMarket || 'General / Global'}
+                </p>
               </div>
             </div>
-          ))}
-        </div>
+
+            <div className="p-3.5 rounded-xl bg-violet-950/30 border border-violet-500/30">
+              <p className="text-violet-300 font-bold uppercase tracking-wider text-[11px] mb-1">
+                3. Campaign Target Market Fit
+              </p>
+              <p className="text-navy-200">
+                Target Regions: <strong className="text-white">{brief?.regionalPreferences?.targetCountries?.join(', ') || 'Global'}</strong> ·
+                Audience Region Alignment: <span className={match.regionalSummary.audienceRegionMatched ? 'text-emerald-400 font-bold' : 'text-amber-400'}>
+                  {match.regionalSummary.audienceRegionMatched ? 'Direct Audience Match' : 'Estimated / Indirect Fit'}
+                </span>
+              </p>
+            </div>
+
+            <div className="p-3 rounded-xl bg-navy-800 border border-navy-700">
+              <p className="text-navy-400 font-bold uppercase tracking-wider text-[11px] mb-1">
+                Language Fluency & Deliverables
+              </p>
+              <p className="text-navy-200">
+                Supported Content Languages: <strong className="text-cyan-400">{match.regionalSummary.languageCoverage || 'English'}</strong>
+              </p>
+              {creator.regionalExpertise && (
+                <p className="text-navy-400 mt-2">
+                  Regional Content Specialization: <span className="text-navy-300">{creator.regionalExpertise.join(' · ')}</span>
+                </p>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-navy-800">
@@ -467,18 +421,76 @@ function MatchBreakdownModal({
 // ────────────────────────────────────────────────────────────────────────────
 export function DiscoveryPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { creators, briefs, shortlist, addToShortlist, removeFromShortlist } = useAppStore();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedBriefId, setSelectedBriefId] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedPlatform, setSelectedPlatform] = useState<string>('all');
-  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
-  const [maxHourlyRate, setMaxHourlyRate] = useState<number>(200);
-  const [sortBy, setSortBy] = useState<'match' | 'rating' | 'rate-asc' | 'rate-desc'>('match');
+  // Search & Filter State (synced from URL search params)
+  const [searchQuery, setSearchQuery] = useState(() => searchParams.get('q') || '');
+  const [selectedBriefId, setSelectedBriefId] = useState<string>(() => searchParams.get('brief') || 'all');
+  const [selectedCategory, setSelectedCategory] = useState<string>(() => searchParams.get('cat') || 'all');
+  const [selectedPlatform, setSelectedPlatform] = useState<string>(() => searchParams.get('plat') || 'all');
+  const [verifiedOnly, setVerifiedOnly] = useState<boolean>(() => searchParams.get('ver') === '1');
+  const [remoteOnly, setRemoteOnly] = useState<boolean>(() => searchParams.get('rem') === '1');
+  const [selectedCountry, setSelectedCountry] = useState<string>(() => searchParams.get('country') || 'all');
+  const [selectedAudienceRegion, setSelectedAudienceRegion] = useState<string>(() => searchParams.get('aud') || 'all');
+  const [selectedLanguages, setSelectedLanguages] = useState<string[]>(() => {
+    const raw = searchParams.get('lang');
+    return raw ? raw.split(',').filter(Boolean) : [];
+  });
+  const [languageMode, setLanguageMode] = useState<'AND' | 'OR'>(() => {
+    return (searchParams.get('langMode') as 'AND' | 'OR') || 'OR';
+  });
+  const [selectedTone, setSelectedTone] = useState<string>(() => searchParams.get('tone') || 'all');
+  const [maxHourlyRate, setMaxHourlyRate] = useState<number>(() => {
+    const r = searchParams.get('rate');
+    return r ? Number(r) : 25000;
+  });
+  const [sortBy, setSortBy] = useState<'match' | 'rating' | 'rate-asc' | 'rate-desc'>(() => {
+    return (searchParams.get('sort') as any) || 'match';
+  });
+
+  // Expandable Advanced Filters drawer
+  const [isAdvancedFiltersOpen, setIsAdvancedFiltersOpen] = useState(false);
 
   // Selected creator for Match Modal
   const [modalCreator, setModalCreator] = useState<Creator | null>(null);
+
+  // Sync state to URL search params
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    if (selectedBriefId !== 'all') params.set('brief', selectedBriefId);
+    if (selectedCategory !== 'all') params.set('cat', selectedCategory);
+    if (selectedPlatform !== 'all') params.set('plat', selectedPlatform);
+    if (verifiedOnly) params.set('ver', '1');
+    if (remoteOnly) params.set('rem', '1');
+    if (selectedCountry !== 'all') params.set('country', selectedCountry);
+    if (selectedAudienceRegion !== 'all') params.set('aud', selectedAudienceRegion);
+    if (selectedLanguages.length > 0) {
+      params.set('lang', selectedLanguages.join(','));
+      params.set('langMode', languageMode);
+    }
+    if (selectedTone !== 'all') params.set('tone', selectedTone);
+    if (maxHourlyRate < 25000) params.set('rate', String(maxHourlyRate));
+    if (sortBy !== 'match') params.set('sort', sortBy);
+
+    setSearchParams(params, { replace: true });
+  }, [
+    searchQuery,
+    selectedBriefId,
+    selectedCategory,
+    selectedPlatform,
+    verifiedOnly,
+    remoteOnly,
+    selectedCountry,
+    selectedAudienceRegion,
+    selectedLanguages,
+    languageMode,
+    selectedTone,
+    maxHourlyRate,
+    sortBy,
+    setSearchParams,
+  ]);
 
   // Active brief for scoring
   const activeBrief = useMemo(
@@ -492,6 +504,63 @@ export function DiscoveryPage() {
     [shortlist]
   );
 
+  // Available unique countries and regions from creators + standard set
+  const availableCountries = useMemo(() => {
+    const set = new Set<string>(['India', 'United States', 'United Kingdom', 'France', 'Germany', 'Canada', 'Australia', 'Japan']);
+    creators.forEach((c) => {
+      if (c.country) set.add(c.country);
+    });
+    return Array.from(set).sort();
+  }, [creators]);
+
+  const availableAudienceRegions = useMemo(() => {
+    return [
+      'India / South Asia',
+      'North America',
+      'Europe',
+      'East Asia',
+      'Southeast Asia',
+      'Middle East / MENA',
+      'Latin America',
+      'Global / Worldwide',
+    ];
+  }, []);
+
+  const commonFilterLanguages = useMemo(() => {
+    return [
+      'Hindi',
+      'English',
+      'Telugu',
+      'Tamil',
+      'Kannada',
+      'Malayalam',
+      'Bengali',
+      'Marathi',
+      'Gujarati',
+      'Spanish',
+      'French',
+      'German',
+      'Japanese',
+    ];
+  }, []);
+
+  // Count active advanced filters
+  const activeAdvancedFilterCount = useMemo(() => {
+    let count = 0;
+    if (selectedCountry !== 'all') count++;
+    if (selectedAudienceRegion !== 'all') count++;
+    if (selectedLanguages.length > 0) count++;
+    if (selectedTone !== 'all') count++;
+    if (remoteOnly) count++;
+    return count;
+  }, [selectedCountry, selectedAudienceRegion, selectedLanguages, selectedTone, remoteOnly]);
+
+  const toggleLanguage = (lang: string) => {
+    setSelectedLanguages((prev) =>
+      prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang]
+    );
+  };
+
   // Filter and Score Creators
   const scoredCreators = useMemo(() => {
     return creators
@@ -499,8 +568,8 @@ export function DiscoveryPage() {
         const match = computeCreatorMatch(c, activeBrief);
         return { creator: c, match };
       })
-      .filter(({ creator: c, match }) => {
-        // Search filter
+      .filter(({ creator: c }) => {
+        // Search filter (name, handle, tagline, bio, skills, location, languages, expertise)
         if (searchQuery.trim()) {
           const q = searchQuery.toLowerCase();
           const matchesQuery =
@@ -508,7 +577,17 @@ export function DiscoveryPage() {
             c.handle.toLowerCase().includes(q) ||
             c.tagline.toLowerCase().includes(q) ||
             c.bio.toLowerCase().includes(q) ||
-            c.skills.some((s) => s.toLowerCase().includes(q));
+            c.skills.some((s) => s.toLowerCase().includes(q)) ||
+            (c.country && c.country.toLowerCase().includes(q)) ||
+            (c.city && c.city.toLowerCase().includes(q)) ||
+            (c.languagesSpoken && c.languagesSpoken.some((l) => l.toLowerCase().includes(q))) ||
+            (c.contentLanguages && c.contentLanguages.some((l) => l.toLowerCase().includes(q))) ||
+            (c.culturalSpecialization &&
+              (Array.isArray(c.culturalSpecialization)
+                ? c.culturalSpecialization.some((cs: string) => cs.toLowerCase().includes(q))
+                : typeof c.culturalSpecialization === 'string' &&
+                  (c.culturalSpecialization as string).toLowerCase().includes(q))) ||
+            (c.regionalExpertise && c.regionalExpertise.some((re) => re.toLowerCase().includes(q)));
           if (!matchesQuery) return false;
         }
 
@@ -529,9 +608,70 @@ export function DiscoveryPage() {
           return false;
         }
 
-        // Max hourly rate
+        // Remote only
+        if (remoteOnly && c.remoteAvailable === false) {
+          return false;
+        }
+
+        // Max hourly rate in INR
         if (c.hourlyRate > maxHourlyRate) {
           return false;
+        }
+
+        // Geographic Country Filter (Creator Location)
+        if (selectedCountry !== 'all') {
+          const countryMatch =
+            (c.country && c.country.toLowerCase() === selectedCountry.toLowerCase()) ||
+            (c.location && c.location.toLowerCase().includes(selectedCountry.toLowerCase()));
+          if (!countryMatch) return false;
+        }
+
+        // Audience Region Filter (Audience Geography)
+        if (selectedAudienceRegion !== 'all') {
+          const creatorAudienceMatches =
+            (c.primaryMarket && c.primaryMarket.toLowerCase().includes(selectedAudienceRegion.toLowerCase())) ||
+            (c.audienceRegions && c.audienceRegions.some((r) => r.toLowerCase().includes(selectedAudienceRegion.toLowerCase()))) ||
+            (c.audienceDistribution && Object.keys(c.audienceDistribution).some((k) => k.toLowerCase().includes(selectedAudienceRegion.toLowerCase())));
+          if (!creatorAudienceMatches) return false;
+        }
+
+        // Language Filter (Multi-select with AND / OR modes)
+        if (selectedLanguages.length > 0) {
+          const creatorLangs = new Set<string>([
+            ...(c.languagesSpoken || []).map((l) => l.toLowerCase()),
+            ...(c.contentLanguages || []).map((l) => l.toLowerCase()),
+            ...(c.deliverableLanguages || []).map((l) => l.toLowerCase()),
+          ]);
+
+          if (creatorLangs.size === 0) {
+            // Default English if none declared
+            creatorLangs.add('english');
+          }
+
+          if (languageMode === 'AND') {
+            const hasAll = selectedLanguages.every((target) =>
+              creatorLangs.has(target.toLowerCase())
+            );
+            if (!hasAll) return false;
+          } else {
+            const hasAny = selectedLanguages.some((target) =>
+              creatorLangs.has(target.toLowerCase())
+            );
+            if (!hasAny) return false;
+          }
+        }
+
+        // Tone Selector Filter
+        if (selectedTone !== 'all') {
+          const declaredTone = c.toneProfile?.primaryTone?.toLowerCase();
+          const secondaryTones = (c.toneProfile?.secondaryTones || []).map((t) => t.toLowerCase());
+          const targetTone = selectedTone.toLowerCase();
+          const matchesTone =
+            declaredTone === targetTone ||
+            secondaryTones.includes(targetTone) ||
+            c.tagline.toLowerCase().includes(targetTone) ||
+            c.bio.toLowerCase().includes(targetTone);
+          if (!matchesTone) return false;
         }
 
         return true;
@@ -558,6 +698,12 @@ export function DiscoveryPage() {
     selectedCategory,
     selectedPlatform,
     verifiedOnly,
+    remoteOnly,
+    selectedCountry,
+    selectedAudienceRegion,
+    selectedLanguages,
+    languageMode,
+    selectedTone,
     maxHourlyRate,
     sortBy,
   ]);
@@ -572,7 +718,7 @@ export function DiscoveryPage() {
         creatorId: creator.id,
         briefId: activeBrief ? activeBrief.id : undefined,
         status: 'saved',
-        notes: activeBrief ? `Matched with brief: ${activeBrief.title}` : 'Discovered in matching studio',
+        notes: activeBrief ? `Matched with brief: ${activeBrief.title}` : 'Discovered in global matching studio',
         addedAt: new Date().toISOString(),
         matchScore,
       });
@@ -581,19 +727,27 @@ export function DiscoveryPage() {
 
   const handleClearFilters = () => {
     setSearchQuery('');
+    setSelectedBriefId('all');
     setSelectedCategory('all');
     setSelectedPlatform('all');
     setVerifiedOnly(false);
-    setMaxHourlyRate(200);
+    setRemoteOnly(false);
+    setSelectedCountry('all');
+    setSelectedAudienceRegion('all');
+    setSelectedLanguages([]);
+    setLanguageMode('OR');
+    setSelectedTone('all');
+    setMaxHourlyRate(25000);
     setSortBy('match');
+    setSearchParams(new URLSearchParams());
   };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* ── Page Header ── */}
       <PageHeader
-        title="Creator Discovery & Matching"
-        subtitle="Match creators against your campaign briefs using deterministic AI fit scoring."
+        title="Global Creator Discovery & AI Matching"
+        subtitle="Discover verified creators worldwide, filter by language fluency, audience demographics, content tone, and match with campaign briefs."
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -622,12 +776,12 @@ export function DiscoveryPage() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider font-semibold text-violet-300">
-              Active Match Engine Target
+              Active AuraMatch Engine Target (7-Factor Scoring)
             </p>
             <p className="text-sm font-semibold text-navy-100">
               {activeBrief
-                ? `Matching against: ${activeBrief.title}`
-                : 'Showing baseline algorithmic scores (Select a campaign brief to personalize)'}
+                ? `Matching against: ${activeBrief.title} (${activeBrief.briefLanguage || 'English'})`
+                : 'Showing baseline algorithmic fit (Select a campaign brief to personalize weights)'}
             </p>
           </div>
         </div>
@@ -636,12 +790,12 @@ export function DiscoveryPage() {
           <select
             value={selectedBriefId}
             onChange={(e) => setSelectedBriefId(e.target.value)}
-            className="w-full md:w-64 bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-xs text-navy-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full md:w-72 bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-xs text-navy-100 focus:outline-none focus:ring-2 focus:ring-violet-500"
           >
             <option value="all">⚡ Baseline Fit (No brief selected)</option>
             {briefs.map((b) => (
               <option key={b.id} value={b.id}>
-                🎯 {b.title} ({formatUSD(b.budget.max)} cap)
+                🎯 {b.title} ({formatRupees(b.budget.max)} cap)
               </option>
             ))}
           </select>
@@ -658,16 +812,17 @@ export function DiscoveryPage() {
       </div>
 
       {/* ── Search & Filter Controls ── */}
-      <div className="bg-navy-900 border border-navy-700/60 rounded-xl p-4 space-y-4">
+      <div className="bg-navy-900 border border-navy-700/60 rounded-xl p-4 space-y-4 shadow-lg">
+        {/* Main Controls Row */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
           {/* Search bar */}
           <div className="md:col-span-5 relative">
             <Input
               icon={Search}
-              placeholder="Search by creator name, @handle, bio, skills..."
+              placeholder="Search creators, skills, languages, city, country, culture..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-navy-800"
+              className="bg-navy-800 text-sm"
             />
           </div>
 
@@ -712,7 +867,7 @@ export function DiscoveryPage() {
               onChange={(e) => setSortBy(e.target.value as any)}
               className="w-full bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-xs text-navy-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
             >
-              <option value="match">Sort: Match Score (Highest)</option>
+              <option value="match">Sort: AuraMatch Score</option>
               <option value="rating">Sort: Client Rating</option>
               <option value="rate-asc">Sort: Rate: Low to High</option>
               <option value="rate-desc">Sort: Rate: High to Low</option>
@@ -720,9 +875,9 @@ export function DiscoveryPage() {
           </div>
         </div>
 
-        {/* Secondary Filter Row */}
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-navy-800 text-xs text-navy-300">
-          <div className="flex items-center gap-6 flex-wrap">
+        {/* Secondary Filter Row with Advanced Drawer Toggle */}
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-navy-800 text-xs text-navy-300">
+          <div className="flex items-center gap-4 flex-wrap">
             {/* Verified toggle */}
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
@@ -732,24 +887,57 @@ export function DiscoveryPage() {
                 className="rounded border-navy-700 bg-navy-800 text-violet-600 focus:ring-violet-500"
               />
               <span className="flex items-center gap-1">
-                <CheckCircle2 size={13} className="text-cyan-400" /> Verified Partners Only
+                <CheckCircle2 size={13} className="text-cyan-400" /> Verified Only
               </span>
             </label>
 
-            {/* Max Hourly Rate Slider */}
+            {/* Remote collaboration toggle */}
+            <label className="flex items-center gap-2 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={remoteOnly}
+                onChange={(e) => setRemoteOnly(e.target.checked)}
+                className="rounded border-navy-700 bg-navy-800 text-violet-600 focus:ring-violet-500"
+              />
+              <span className="flex items-center gap-1">
+                <Globe size={13} className="text-emerald-400" /> Remote Available
+              </span>
+            </label>
+
+            {/* Max Hourly Rate Slider in INR */}
             <div className="flex items-center gap-2">
               <span>Max Rate:</span>
               <input
                 type="range"
-                min="50"
-                max="250"
-                step="10"
+                min="1000"
+                max="25000"
+                step="500"
                 value={maxHourlyRate}
                 onChange={(e) => setMaxHourlyRate(Number(e.target.value))}
                 className="w-24 accent-violet-500 cursor-pointer"
               />
-              <span className="font-semibold text-navy-100">${maxHourlyRate}/hr</span>
+              <span className="font-semibold text-navy-100">{formatRupees(maxHourlyRate)}/hr</span>
             </div>
+
+            {/* Advanced Filters Toggle Button */}
+            <button
+              onClick={() => setIsAdvancedFiltersOpen(!isAdvancedFiltersOpen)}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-colors cursor-pointer text-xs font-medium',
+                isAdvancedFiltersOpen || activeAdvancedFilterCount > 0
+                  ? 'bg-violet-950/70 text-violet-200 border-violet-600/50'
+                  : 'bg-navy-800/80 text-navy-300 border-navy-700 hover:text-navy-100'
+              )}
+            >
+              <SlidersHorizontal size={13} />
+              <span>Advanced Filters (Geo, Languages & Tone)</span>
+              {activeAdvancedFilterCount > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-violet-600 text-white font-bold ml-0.5">
+                  {activeAdvancedFilterCount}
+                </span>
+              )}
+              {isAdvancedFiltersOpen ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+            </button>
           </div>
 
           <div className="flex items-center gap-3">
@@ -764,30 +952,211 @@ export function DiscoveryPage() {
             </button>
           </div>
         </div>
+
+        {/* ── Expandable Advanced Geographic & Multilingual Drawer ── */}
+        {isAdvancedFiltersOpen && (
+          <div className="pt-4 border-t border-navy-800 space-y-4 bg-navy-950/40 p-3.5 rounded-lg border border-navy-800">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* 1. Creator Physical Geography */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-navy-200 flex items-center gap-1.5">
+                  <MapPin size={13} className="text-rose-400" /> Creator Country / Base
+                </label>
+                <select
+                  value={selectedCountry}
+                  onChange={(e) => setSelectedCountry(e.target.value)}
+                  className="w-full bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-xs text-navy-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="all">Any Creator Country</option>
+                  {availableCountries.map((c) => (
+                    <option key={c} value={c}>
+                      {c}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-navy-400">
+                  Filters where the creator physically resides or produces content.
+                </p>
+              </div>
+
+              {/* 2. Target Audience Geography */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-navy-200 flex items-center gap-1.5">
+                  <Users size={13} className="text-cyan-400" /> Primary Audience Region
+                </label>
+                <select
+                  value={selectedAudienceRegion}
+                  onChange={(e) => setSelectedAudienceRegion(e.target.value)}
+                  className="w-full bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-xs text-navy-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="all">Any Audience Demographics</option>
+                  {availableAudienceRegions.map((r) => (
+                    <option key={r} value={r}>
+                      {r}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-navy-400">
+                  Separates creator location from where followers and campaign reach reside.
+                </p>
+              </div>
+
+              {/* 3. Content Tone Preference */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-navy-200 flex items-center gap-1.5">
+                  <Sparkles size={13} className="text-amber-400" /> Brand & Content Tone
+                </label>
+                <select
+                  value={selectedTone}
+                  onChange={(e) => setSelectedTone(e.target.value)}
+                  className="w-full bg-navy-800 border border-navy-700 rounded-lg px-3 py-2 text-xs text-navy-200 focus:outline-none focus:ring-2 focus:ring-violet-500"
+                >
+                  <option value="all">Any Content Tone</option>
+                  {STANDARD_CONTENT_TONES.map((t) => (
+                    <option key={t} value={t}>
+                      {t}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-[11px] text-navy-400">
+                  Match voice styling (humorous, inspirational, educational, luxury, etc.).
+                </p>
+              </div>
+            </div>
+
+            {/* 4. Language Multi-Select & Logic Mode (AND vs OR) */}
+            <div className="pt-2 border-t border-navy-800/80 space-y-2">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <label className="text-xs font-semibold text-navy-200 flex items-center gap-1.5">
+                  <Languages size={13} className="text-emerald-400" /> Language Fluency & Deliverables
+                  {selectedLanguages.length > 0 && (
+                    <span className="text-[11px] text-violet-300 font-normal">
+                      ({selectedLanguages.length} selected)
+                    </span>
+                  )}
+                </label>
+
+                {/* AND / OR Logic Switch */}
+                <div className="flex items-center gap-2 bg-navy-900 border border-navy-700 rounded-lg p-0.5 text-xs">
+                  <span className="text-[11px] text-navy-400 pl-1.5">Match Logic:</span>
+                  <button
+                    type="button"
+                    onClick={() => setLanguageMode('OR')}
+                    className={cn(
+                      'px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer',
+                      languageMode === 'OR'
+                        ? 'bg-violet-600 text-white'
+                        : 'text-navy-400 hover:text-navy-200'
+                    )}
+                    title="Creator matches if they speak ANY selected language"
+                  >
+                    ANY (OR)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLanguageMode('AND')}
+                    className={cn(
+                      'px-2 py-0.5 rounded text-[11px] font-semibold transition-colors cursor-pointer',
+                      languageMode === 'AND'
+                        ? 'bg-violet-600 text-white'
+                        : 'text-navy-400 hover:text-navy-200'
+                    )}
+                    title="Creator must speak ALL selected languages"
+                  >
+                    ALL (AND)
+                  </button>
+                </div>
+              </div>
+
+              {/* Language Chips */}
+              <div className="flex flex-wrap gap-1.5">
+                {commonFilterLanguages.map((lang) => {
+                  const isSelected = selectedLanguages.includes(lang);
+                  return (
+                    <button
+                      key={lang}
+                      type="button"
+                      onClick={() => toggleLanguage(lang)}
+                      className={cn(
+                        'px-2.5 py-1 rounded-full text-xs font-medium border flex items-center gap-1.5 transition-all cursor-pointer',
+                        isSelected
+                          ? 'bg-violet-600 text-white border-violet-500 shadow-sm'
+                          : 'bg-navy-800 text-navy-300 border-navy-700/80 hover:bg-navy-750 hover:text-navy-100'
+                      )}
+                    >
+                      {isSelected && <Check size={11} />}
+                      {lang}
+                    </button>
+                  );
+                })}
+                {selectedLanguages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLanguages([])}
+                    className="text-xs text-rose-400 hover:text-rose-300 underline px-1 py-1 cursor-pointer"
+                  >
+                    Clear languages
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ── Creator Match Cards Grid ── */}
       {scoredCreators.length === 0 ? (
         <EmptyState
           icon={Search}
-          title="No creators match your filters"
-          description="Try broadening your search keywords, increasing the max hourly rate, or resetting your filter criteria."
+          title="No creators match your current criteria"
+          description="We couldn't find creators meeting all the active filters. Review the relaxation suggestions below:"
           action={
-            <Button variant="secondary" onClick={handleClearFilters}>
-              Reset All Filters
-            </Button>
+            <div className="space-y-4">
+              <div className="p-4 rounded-xl bg-navy-900 border border-navy-800 text-left text-xs text-navy-300 space-y-2 max-w-md mx-auto">
+                <p className="font-semibold text-navy-100 flex items-center gap-1.5">
+                  <Info size={14} className="text-violet-400" /> Quick Relaxation Tips:
+                </p>
+                {languageMode === 'AND' && selectedLanguages.length > 1 && (
+                  <p>
+                    • Switch Language Match from <strong>ALL (AND)</strong> to <strong>ANY (OR)</strong> so creators fluent in any selected language appear.
+                  </p>
+                )}
+                {selectedCountry !== 'all' && (
+                  <p>• Set Creator Country to <strong>Any Country</strong> to view remote-friendly global creators.</p>
+                )}
+                {selectedAudienceRegion !== 'all' && (
+                  <p>• Set Audience Region to <strong>Any Demographics</strong> to expand creator reach.</p>
+                )}
+                {selectedTone !== 'all' && (
+                  <p>• Try resetting the Content Tone filter to include versatile creators.</p>
+                )}
+                {maxHourlyRate < 25000 && (
+                  <p>• Increase the Max Hourly Rate slider above {formatRupees(maxHourlyRate)}/hr.</p>
+                )}
+              </div>
+
+              <Button variant="secondary" onClick={handleClearFilters}>
+                Reset All Filters
+              </Button>
+            </div>
           }
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {scoredCreators.map(({ creator, match }) => {
             const isShortlisted = shortlistedIds.has(creator.id);
-            const scoreColor =
-              match.overallScore >= 88
-                ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10'
-                : match.overallScore >= 75
-                ? 'text-violet-400 border-violet-500/40 bg-violet-500/10'
-                : 'text-amber-400 border-amber-500/40 bg-amber-500/10';
+            const scoreColor = !match.isFullyQualified
+              ? 'text-rose-400 border-rose-500/40 bg-rose-500/10'
+              : match.overallScore >= 88
+              ? 'text-emerald-400 border-emerald-500/40 bg-emerald-500/10'
+              : match.overallScore >= 75
+              ? 'text-violet-400 border-violet-500/40 bg-violet-500/10'
+              : 'text-amber-400 border-amber-500/40 bg-amber-500/10';
+
+            const displayLanguages = creator.languagesSpoken || ['English'];
+            const locationText = creator.city && creator.country
+              ? `${creator.city}, ${creator.country}`
+              : creator.country || creator.location || 'Global';
 
             return (
               <Card
@@ -800,7 +1169,7 @@ export function DiscoveryPage() {
                     <div className="flex items-center gap-3">
                       <Avatar src={creator.avatarUrl} alt={creator.name} size="md" />
                       <div>
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <Link
                             to={`/creators/${creator.id}`}
                             className="font-bold text-sm text-navy-100 hover:text-violet-400 transition-colors"
@@ -808,24 +1177,31 @@ export function DiscoveryPage() {
                             {creator.name}
                           </Link>
                           {creator.verified && (
-                            <CheckCircle2 size={14} className="text-cyan-400 shrink-0" />
+                            <span title="Verified Creator">
+                              <CheckCircle2 size={14} className="text-cyan-400 shrink-0" />
+                            </span>
+                          )}
+                          {creator.remoteAvailable !== false && (
+                            <span className="text-[10px] px-1.5 py-0.2 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                              Remote
+                            </span>
                           )}
                         </div>
                         <p className="text-xs text-navy-400">{creator.handle}</p>
                       </div>
                     </div>
 
-                    {/* AI Match Score Badge button */}
+                    {/* 7-Factor AuraMatch Score Badge button */}
                     <button
                       onClick={() => setModalCreator(creator)}
                       className={cn(
-                        'px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1 cursor-pointer transition-transform hover:scale-105',
+                        'px-2.5 py-1 rounded-full text-xs font-bold border flex items-center gap-1 cursor-pointer transition-transform hover:scale-105 shrink-0',
                         scoreColor
                       )}
-                      title="Click to view AI match breakdown"
+                      title="Click to inspect 7-factor AuraMatch & tone breakdown"
                     >
                       <Sparkles size={11} />
-                      {match.overallScore}% Match
+                      {match.overallScore}% Fit
                     </button>
                   </div>
 
@@ -833,16 +1209,44 @@ export function DiscoveryPage() {
                   <p className="text-xs text-navy-200 font-medium mb-1 capitalize">
                     {creator.category.replace('-', ' ')}
                   </p>
-                  <p className="text-xs text-navy-400 line-clamp-2 mb-3">
+                  <p className="text-xs text-navy-400 line-clamp-2 mb-2">
                     {creator.tagline || creator.bio}
                   </p>
+
+                  {/* Geographic & Multilingual Badges */}
+                  <div className="flex flex-wrap items-center gap-1.5 mb-2.5 text-[11px]">
+                    {/* Location */}
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-navy-800 text-navy-300 border border-navy-700/50">
+                      <MapPin size={11} className="text-rose-400" />
+                      {locationText}
+                    </span>
+
+                    {/* Languages */}
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded bg-navy-800 text-navy-300 border border-navy-700/50">
+                      <Languages size={11} className="text-emerald-400" />
+                      {displayLanguages.slice(0, 2).join(', ')}
+                      {displayLanguages.length > 2 && ` +${displayLanguages.length - 2}`}
+                    </span>
+
+                    {/* Primary Market / Tone */}
+                    {creator.primaryMarket && (
+                      <span className="px-1.5 py-0.5 rounded bg-navy-800 text-cyan-400 border border-cyan-500/20 text-[10px]">
+                        {creator.primaryMarket}
+                      </span>
+                    )}
+                    {creator.toneProfile?.primaryTone && (
+                      <span className="px-1.5 py-0.5 rounded bg-violet-950/60 text-violet-300 border border-violet-500/20 text-[10px]">
+                        {creator.toneProfile.primaryTone}
+                      </span>
+                    )}
+                  </div>
 
                   {/* Skills Pills */}
                   <div className="flex flex-wrap gap-1 mb-3">
                     {creator.skills.slice(0, 3).map((skill) => (
                       <span
                         key={skill}
-                        className="px-2 py-0.5 rounded text-[10px] bg-navy-800 text-navy-300 border border-navy-700/50"
+                        className="px-2 py-0.5 rounded text-[10px] bg-navy-800/80 text-navy-300 border border-navy-700/40"
                       >
                         {skill}
                       </span>
@@ -855,7 +1259,7 @@ export function DiscoveryPage() {
                   </div>
                 </div>
 
-                {/* Footer with Rate, Rating & Action Buttons */}
+                {/* Footer with Rate in INR, Rating & Action Buttons */}
                 <div className="pt-3 border-t border-navy-800/80">
                   <div className="flex items-center justify-between text-xs text-navy-300 mb-3">
                     <div className="flex items-center gap-1">
@@ -864,7 +1268,7 @@ export function DiscoveryPage() {
                       <span className="text-navy-500">({creator.reviewCount})</span>
                     </div>
                     <div className="font-bold text-navy-100">
-                      {formatUSD(creator.hourlyRate)}/hr
+                      {formatRupees(creator.hourlyRate)}/hr
                     </div>
                   </div>
 
@@ -1031,7 +1435,7 @@ export function ShortlistPage() {
         />
         <StatCard
           label="Estimated Campaign Budget"
-          value={formatUSD(metrics.totalRate)}
+          value={formatRupees(metrics.totalRate)}
           icon={DollarSign}
           accent="emerald"
         />
@@ -1112,7 +1516,7 @@ export function ShortlistPage() {
                     <p className="text-xs text-navy-400">{creator.handle} · {creator.category}</p>
                     <div className="flex items-center gap-3 mt-1.5 text-xs text-navy-300">
                       <span className="font-semibold text-emerald-400">
-                        {formatUSD(creator.hourlyRate)}/hr
+                        {formatRupees(creator.hourlyRate)}/hr
                       </span>
                       <span>·</span>
                       <span className="flex items-center gap-1">

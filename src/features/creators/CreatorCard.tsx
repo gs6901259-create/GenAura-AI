@@ -101,16 +101,40 @@ export const CreatorCard: React.FC<CreatorCardProps> = ({
         {creator.bio}
       </p>
 
-      {/* Meta Specs: Category, Status, Rate, Rating */}
+      {/* Meta Specs: Category, Status, Rate, Location & Languages */}
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <Badge variant="violet" className="capitalize">
           {creator.category.replace('-', ' ')}
         </Badge>
         {getStatusBadge()}
+        {creator.remoteAvailable !== false && (
+          <Badge variant="cyan" className="text-[10px]">Remote</Badge>
+        )}
         <span className="text-navy-300 font-semibold ml-auto">
           {formatRupees(creator.hourlyRate)}/hr
         </span>
       </div>
+
+      {/* Location & Languages */}
+      {(creator.location || (creator.languages && creator.languages.length > 0)) && (
+        <div className="flex flex-wrap items-center gap-2 text-[11px] text-navy-400">
+          {creator.location && (
+            <span className="flex items-center gap-1">
+              📍 {creator.city ? `${creator.city}, ${creator.country || ''}` : creator.location}
+            </span>
+          )}
+          {creator.languages && creator.languages.length > 0 && (
+            <span className="flex items-center gap-1 text-cyan-400/90 font-medium">
+              🗣️ {creator.languages.slice(0, 3).join(', ')}
+            </span>
+          )}
+          {creator.toneProfile && creator.toneProfile.declaredTones.length > 0 && (
+            <span className="text-violet-400 font-medium ml-auto">
+              ✨ {creator.toneProfile.declaredTones[0]}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Skills */}
       <div>

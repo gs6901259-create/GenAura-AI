@@ -31,8 +31,20 @@ Your core responsibilities:
 1. GenAura AI Domain Expertise:
    - Creator Tools: Guide creators through Creator Studio, AI Profile Coach (bio rewrites, hook formulas), and Portfolio Showcase.
    - 100-Point Verification Rubric: Explain criteria (Profile Completeness 20pts, Portfolio Quality 25pts, Content Originality 20pts, Professional Readiness 15pts, Platform Authenticity 20pts). State clearly that >=85 pts qualifies for human review approval.
-   - Brand Discovery & Matching: Explain the 6-factor AuraMatch engine (Niche 30%, Audience 20%, Budget 15%, Platform 15%, Portfolio 10%, Location 10%).
-   - Campaign Briefs (BriefGen AI): Assist brands in structuring objectives, deliverables, timelines, and budgets in INR.
+   - Upgraded 7-Factor AuraMatch Engine (v2.1 Multilingual):
+     * Niche Match (25%): Category and thematic synergy with campaign requirements.
+     * Audience Alignment (20%): Target demographic match, engagement rate, and verified follower tier.
+     * Language Compatibility (15%): Matches creator languages with campaign required languages. Mandatory language criteria disqualifies non-matching creators.
+     * Content Tone & Style Fit (15%): Alignment with brand tone taxonomy (15 standard tones, formality & energy constraints).
+     * Budget Fit (10%): Creator rates vs. campaign budget ceiling in INR.
+     * Platform Relevance (10%): Match across deliverables and platforms (Instagram, YouTube, TikTok, LinkedIn).
+     * Regional & Market Expertise (5%): Creator regional knowledge and audience geographic distribution.
+     * Strict Enforcement: Failing mandatory language or region criteria strictly marks a creator as disqualified ("Disqualified (Mandatory Criteria)"), caps score at 48%, and details specific violations.
+   - Multilingual Campaign Briefs (BriefGen AI):
+     * Supports 18 languages (English, Hindi, Telugu, Tamil, Kannada, Malayalam, Bengali, Marathi, Gujarati, Punjabi, Urdu, Spanish, French, German, Arabic, Portuguese, Japanese, Korean).
+     * Generates structured 18-section briefs with regional preferences, localized CTAs, and cultural context.
+     * Generates linked language variants and allows side-by-side comparison while strictly preserving the canonical campaign ID and INR budget.
+   - Content Tone Taxonomy: 15 standard tones (Authentic & Relatable, Authoritative & Thought Leadership, Educational & Informative, Witty & Humorous, Inspiring & Uplifting, Conversational & Friendly, Bold & Disruptive, Elegant & Premium, Cinematic & Story-Driven, Playful & Vibrant, Analytical & Data-Driven, Empathetic & Warm, Edgy & Unconventional, Minimalist & Direct, Dramatic & Urgent).
    - Collaboration & Deal Room: Guide users on proposals, counteroffers, audit trails, and deliverable review stages.
    - Digital Wallet & Collaboration Payments: Explain how users manage Indian Rupee (₹ INR) balances (Available, Pending, Reserved in Escrow), add funds via UPI/Cards/NetBanking, lock milestone payments in escrow, and withdraw earnings.
    - Currency Standards: All budgets, rates, proposals, and wallet transactions use Indian Rupees (₹ INR) with en-IN formatting (₹500, ₹1,500, ₹25,000, ₹1,25,000, ₹10,00,000). Recommend budgets by creator tier: Nano (₹2,000–₹5,000), Micro (₹5,000–₹25,000), Mid (₹25,000–₹1,00,000), Macro (₹1,00,000+).
@@ -137,6 +149,13 @@ class AiAssistantService {
    * Utilizes the live Google Gemini API if configured with VITE_GEMINI_API_KEY,
    * or delegates to the comprehensive, explainable Deterministic Knowledge Engine.
    */
+  public async sendMessage(
+    userMessage: string,
+    context: AssistantContext = {}
+  ): Promise<AssistantResponse> {
+    return this.generateReply(userMessage, [], context);
+  }
+
   public async generateReply(
     userMessage: string,
     history: ChatMessage[] = [],
@@ -283,8 +302,8 @@ class AiAssistantService {
 
 **GenAura AI** is an AI-powered content creator marketplace that seamlessly connects forward-thinking brands with verified content creators through intelligent workflows:
 
-1. **⚡ AuraMatch 6-Factor Matching:** Pairs campaign requirements with creator strengths based on niche, engagement rate, budget compatibility, deliverables, portfolio case studies, and location.
-2. **📝 BriefGen AI:** Guides brands through automated generation of comprehensive campaign briefs with deliverables, visual guidelines, and clear budget tiers.
+1. **⚡ AuraMatch 7-Factor Matching (v2.1):** Pairs campaign requirements with creator strengths based on Niche (25%), Audience (20%), Language (15%), Content Tone (15%), Budget (10%), Platform (10%), and Regional Expertise (5%).
+2. **📝 Multilingual BriefGen AI:** Guides brands through automated generation of comprehensive 18-section campaign briefs across 18 regional and global languages, with linked variants and side-by-side comparison.
 3. **🎨 Creator Hub:** Features the **Creator Studio**, an interactive **AI Profile Coach** for bio rewrites and hooks, and a transparent **100-Point Verification Rubric**.
 4. **🤝 Smart Deal Room:** Manages end-to-end collaboration agreements with versioned proposals, counteroffers, real-time messaging, and audit-logged milestones.`,
         actionLink: { label: 'Explore Creator Discovery', to: '/discovery' },
@@ -434,18 +453,55 @@ The **Smart Deal Room** streamlines creator agreements and negotiations:
     // ─────────────────────────────────────────────────────────────────────────
     if (q.includes('match') || q.includes('auramatch') || q.includes('find creator') || q.includes('discover')) {
       return {
-        text: `### ⚡ AuraMatch 6-Factor Matching Engine
+        text: `### ⚡ AuraMatch 7-Factor Matching Engine (v2.1 Multilingual)
 
-AuraMatch calculates creator compatibility based on a weighted 6-factor algorithm:
-1. **Niche Alignment (30%):** Category and topic synergy with your brief.
-2. **Audience & Quality Fit (20%):** Engagement rate, follower tier, and past client feedback.
-3. **Budget Compatibility (15%):** Creator starting rates vs. campaign budget ceiling.
-4. **Platform & Format Fit (15%):** Capability in requested formats (Reels, TikTok, 3D, UGC).
-5. **Portfolio Relevance (10%):** Quality of tagged client case studies.
-6. **Location & Language (10%):** Preferred working region and languages.
+AuraMatch calculates creator compatibility based on our mathematically balanced 7-factor engine (totaling 100%):
+1. **Niche Alignment (25% base, up to 30%):** Category and thematic synergy with campaign requirements.
+2. **Audience Alignment (20%):** Target demographic match, engagement rate, and verified follower tier.
+3. **Language Compatibility (15%):** Spoken, content, and deliverable language alignment.
+4. **Content Tone & Style Fit (15%):** Alignment with brand tone taxonomy (15 standard tones), formality, and energy.
+5. **Budget Compatibility (10%):** Creator starting rates vs. campaign budget ceiling in INR.
+6. **Platform & Format Fit (10%):** Capability across requested formats and platforms (Reels, Shorts, TikTok, 3D, UGC).
+7. **Regional & Cultural Expertise (5%):** Local market understanding and audience geographic concentration.
 
-Click **"Why this match?"** on any creator card in Discovery to view the exact factor breakdown!`,
+> **Strict Mandatory Criteria:** If a campaign sets mandatory language or market requirements, any creator not meeting them is marked **"Disqualified (Mandatory Criteria)"** with their score capped at 48% and violations clearly itemized.
+
+Click **"Why this match?"** on any creator card in Discovery to inspect the 3-tab breakdown (Scores, Tone Fit Evidence, Regional Context)!`,
         actionLink: { label: 'Explore Creator Discovery', to: '/discovery' },
+      };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // 8B. MULTILINGUAL CAMPAIGNS & CONTENT TONES
+    // ─────────────────────────────────────────────────────────────────────────
+    if (
+      q.includes('multilingual') ||
+      q.includes('language') ||
+      q.includes('translate') ||
+      q.includes('hindi') ||
+      q.includes('telugu') ||
+      q.includes('tamil') ||
+      q.includes('tone') ||
+      q.includes('tones') ||
+      q.includes('regional')
+    ) {
+      return {
+        text: `### 🌐 Multilingual Campaigns & Content Tone Intelligence
+
+GenAura AI supports hyper-localized global and regional campaigns:
+
+1. **18 Supported Brief Languages:**
+   - **Indian Regional:** English, Hindi (हिंदी), Telugu (తెలుగు), Tamil (தமிழ்), Kannada (ಕನ್ನಡ), Malayalam (മലയാളം), Bengali (বাংলা), Marathi (मराठी), Gujarati (ગુજરાતી), Punjabi (ਪੰਜਾਬੀ), Urdu (اردو).
+   - **Global:** Spanish (Español), French (Français), German (Deutsch), Arabic (العربية), Portuguese (Português), Japanese (日本語), Korean (한국어).
+
+2. **15 Standard Content Tones:**
+   - Authentic & Relatable, Authoritative & Thought Leadership, Educational & Informative, Witty & Humorous, Inspiring & Uplifting, Conversational & Friendly, Bold & Disruptive, Elegant & Premium, Cinematic & Story-Driven, Playful & Vibrant, Analytical & Data-Driven, Empathetic & Warm, Edgy & Unconventional, Minimalist & Direct, Dramatic & Urgent.
+
+3. **Linked Language Variants & Side-by-Side Review:**
+   - Generate localized brief variants without fracturing campaigns.
+   - Preserves canonical Campaign ID and integer-paise INR budget integrity.
+   - Side-by-side comparison displays key sections, localized CTAs, and cultural themes.`,
+        actionLink: { label: 'Create Multilingual Brief', to: '/briefs/new' },
       };
     }
 
