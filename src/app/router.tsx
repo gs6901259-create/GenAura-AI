@@ -5,6 +5,8 @@ import { CreatorsPage, CreatorDetailPage } from '@/features/creators';
 import { DiscoveryPage, ShortlistPage } from '@/features/discovery';
 import { BriefsPage, BriefNewPage, BriefDetailPage } from '@/features/briefs';
 import { ProjectsPage, ProjectDetailPage } from '@/features/projects';
+import { CreatorStudioPage } from '@/features/studio/CreatorStudioPage';
+import { AdminVerificationQueue } from '@/features/admin/AdminVerificationQueue';
 import { SettingsPage } from '@/features/settings';
 import { Button } from '@/components/ui';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
@@ -53,6 +55,11 @@ const router = createBrowserRouter([
       // Creators (Member 2)
       { path: 'creators',     element: <CreatorsPage /> },
       { path: 'creators/:id', element: <CreatorDetailPage /> },
+
+      // Creator Studio & Verification Engine (Core Flow)
+      { path: 'studio',             element: <CreatorStudioPage /> },
+      { path: 'verification',       element: <CreatorStudioPage /> },
+      { path: 'admin/verification', element: <AdminVerificationQueue /> },
 
       // Discovery & Shortlist (Member 3)
       { path: 'discovery', element: <DiscoveryPage /> },

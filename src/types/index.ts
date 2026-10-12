@@ -50,6 +50,47 @@ export type CreatorCategory =
 
 export type CreatorStatus = 'available' | 'busy' | 'on-leave';
 
+export type VerificationStatus =
+  | 'draft'
+  | 'submitted'
+  | 'under_review'
+  | 'needs_changes'
+  | 'verified'
+  | 'rejected';
+
+export type FollowerTier = 'nano' | 'micro' | 'mid' | 'macro' | 'celebrity';
+
+export type UserPersona = 'brand' | 'creator' | 'admin';
+
+export interface CreatorVerificationAudit {
+  reviewer: string;
+  reviewedAt: string;
+  decision: 'approved' | 'changes_requested' | 'rejected';
+  reason: string;
+  score: number;
+}
+
+export interface CreatorVerificationReport {
+  status: VerificationStatus;
+  overallScore: number;
+  criterionScores: {
+    profileCompleteness: number;      // max 20
+    portfolioQuality: number;         // max 25
+    contentOriginality: number;       // max 20
+    professionalReadiness: number;    // max 15
+    authenticityConsistency: number;  // max 20
+  };
+  passedChecks: string[];
+  warnings: string[];
+  suggestions: string[];
+  recommendedDecision: 'approve_eligible' | 'needs_changes' | 'manual_review';
+  explanation: string;
+  submittedAt?: string;
+  reviewedAt?: string;
+  reviewedBy?: string;
+  auditTrail?: CreatorVerificationAudit[];
+}
+
 export interface Creator {
   id: CreatorId;
   name: string;
@@ -79,7 +120,26 @@ export interface Creator {
     instagram?: string;
     behance?: string;
     dribbble?: string;
+    youtube?: string;
+    tiktok?: string;
   };
+
+  // ── Onboarding, Studio & Verification extensions ──
+  email?: string;
+  username?: string;
+  country?: string;
+  city?: string;
+  preferredRegions?: string[];
+  languages?: string[];
+  contentFormats?: string[];
+  yearsExperience?: number;
+  audienceSize?: number;
+  followerTier?: FollowerTier;
+  engagementRate?: number;
+  rateRange?: { min: number; max: number };
+  collaborationTypes?: string[];
+  verificationStatus?: VerificationStatus;
+  verificationReport?: CreatorVerificationReport;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -100,6 +160,15 @@ export interface PortfolioItem {
   featured: boolean;
   externalUrl?: string;
   clientName?: string;
+
+  // ── Portfolio Builder extensions ──
+  format?: string;
+  campaignContext?: string;
+  creatorRole?: string;
+  isSelfReportedMetrics?: boolean;
+  views?: number;
+  likes?: number;
+  order?: number;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -262,11 +331,14 @@ export interface CollaborationMessage {
  * can read statistics without coupling to store implementations.
  */
 export interface AppStore {
-  creators:     Creator[];
-  portfolios:   PortfolioItem[];
-  briefs:       CreativeBrief[];
-  shortlist:    ShortlistEntry[];
-  projects:     ProjectRequest[];
+  creators:          Creator[];
+  portfolios:        PortfolioItem[];
+  briefs:            CreativeBrief[];
+  shortlist:         ShortlistEntry[];
+  projects:          ProjectRequest[];
+  currentPersona?:   UserPersona;
+  currentCreatorId?: CreatorId;
+  activeBriefId?:    BriefId | null;
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -294,6 +366,9 @@ export const ROUTES = {
   creators:         '/creators',
   creatorDetail:    '/creators/:id',
   discovery:        '/discovery',
+  studio:           '/studio',
+  verification:     '/verification',
+  adminVerification:'/admin/verification',
   shortlist:        '/shortlist',
   briefs:           '/briefs',
   briefNew:         '/briefs/new',

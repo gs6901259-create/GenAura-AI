@@ -64,31 +64,35 @@ export interface MatchAnalysis {
   overallScore: number;
   matchTier: 'Exceptional Match' | 'Strong Match' | 'Moderate Match' | 'Low Match';
   breakdown: {
-    nicheRelevance: number;
-    platformFit: number;
-    performanceFit: number;
-    budgetFit: number;
-    brandSafetyFit: number;
+    nicheRelevance: number;       // 30%
+    audienceTargetFit: number;    // 20%
+    budgetCompatibility: number;  // 15%
+    platformFormatFit: number;    // 15%
+    portfolioRelevance: number;   // 10%
+    locationLanguageFit: number;  // 10%
   };
+  missingCriteria: string[];
   explanations: MatchExplanation[];
 }
 
 export function computeCreatorMatch(creator: Creator, brief: CreativeBrief | null): MatchAnalysis {
   if (!brief) {
     return {
-      overallScore: 85,
+      overallScore: 84,
       matchTier: 'Strong Match',
       breakdown: {
         nicheRelevance: 85,
-        platformFit: 80,
-        performanceFit: Math.round(creator.rating * 18),
-        budgetFit: 90,
-        brandSafetyFit: creator.verified ? 95 : 85,
+        audienceTargetFit: 80,
+        budgetCompatibility: 90,
+        platformFormatFit: 85,
+        portfolioRelevance: 80,
+        locationLanguageFit: 85,
       },
+      missingCriteria: ['Select a specific campaign brief to calculate personalized alignment.'],
       explanations: [
         {
           factor: 'General Profile Quality',
-          score: Math.round(creator.rating * 20),
+          score: Math.round(creator.rating * 18),
           type: 'positive',
           detail: `High creator rating (${creator.rating}/5.0) across ${creator.completedProjects} verified projects.`,
         },
@@ -97,9 +101,10 @@ export function computeCreatorMatch(creator: Creator, brief: CreativeBrief | nul
   }
 
   const explanations: MatchExplanation[] = [];
+  const missingCriteria: string[] = [];
 
-  // 1. Niche & Category alignment (25%)
-  let nicheRelevance = 40;
+  // 1. Niche Relevance (30%)
+  let nicheRelevance = 45;
   const preferredCats = brief.preferredCategories || [];
   const requiredSkills = (brief.requiredSkills || []).map((s) => s.toLowerCase());
   const creatorSkills = (creator.skills || []).map((s) => s.toLowerCase());
@@ -114,135 +119,181 @@ export function computeCreatorMatch(creator: Creator, brief: CreativeBrief | nul
     preferredCats.some((c) => c.toLowerCase().includes(creator.category.toLowerCase()));
 
   if (categoryMatch && matchingSkills.length > 0) {
-    nicheRelevance = 95;
+    nicheRelevance = 98;
     explanations.push({
-      factor: 'Niche & Category Fit',
-      score: 95,
+      factor: 'Niche Relevance (30%)',
+      score: 98,
       type: 'positive',
-      detail: `Direct match in '${creator.category}' with matching skills: ${matchingSkills.slice(0, 3).join(', ')}.`,
+      detail: `Direct specialty match in '${creator.category}' with ${matchingSkills.length} matching skills (${matchingSkills.slice(0, 3).join(', ')}).`,
     });
   } else if (categoryMatch) {
-    nicheRelevance = 80;
+    nicheRelevance = 85;
     explanations.push({
-      factor: 'Niche & Category Fit',
-      score: 80,
+      factor: 'Niche Relevance (30%)',
+      score: 85,
       type: 'positive',
       detail: `Specialty aligns with target category '${creator.category}'.`,
     });
   } else if (matchingSkills.length > 0) {
     nicheRelevance = 65;
     explanations.push({
-      factor: 'Niche & Category Fit',
+      factor: 'Niche Relevance (30%)',
       score: 65,
       type: 'neutral',
-      detail: `Shares ${matchingSkills.length} requested skills, though primary discipline is ${creator.category}.`,
+      detail: `Shares ${matchingSkills.length} requested skills, though primary category is ${creator.category}.`,
     });
   } else {
     nicheRelevance = 35;
+    missingCriteria.push(`Creator category '${creator.category}' differs from requested campaign focus`);
     explanations.push({
-      factor: 'Niche & Category Fit',
+      factor: 'Niche Relevance (30%)',
       score: 35,
       type: 'warning',
-      detail: `Creator category '${creator.category}' differs from requested campaign focus.`,
+      detail: `Category '${creator.category}' does not directly target requested campaign disciplines.`,
     });
   }
 
-  // 2. Format & Platform Alignment (20%)
-  let platformFit = 75;
-  if (creator.socialLinks && Object.keys(creator.socialLinks).length > 1) {
-    platformFit = 90;
-    explanations.push({
-      factor: 'Format & Channel Fit',
-      score: 90,
-      type: 'positive',
-      detail: `Multi-channel presence active across ${Object.keys(creator.socialLinks).join(', ')}.`,
-    });
-  } else {
-    platformFit = 70;
-    explanations.push({
-      factor: 'Format & Channel Fit',
-      score: 70,
-      type: 'neutral',
-      detail: `Standard deliverable formats compatible with campaign channels.`,
-    });
-  }
-
-  // 3. Performance & Quality (20%)
+  // 2. Audience & Target-Market Fit (20%)
+  let audienceTargetFit = 75;
   const ratingPct = Math.min(100, Math.round((creator.rating / 5) * 100));
   const reviewBonus = Math.min(10, Math.round(creator.reviewCount / 10));
-  const performanceFit = Math.min(100, ratingPct + reviewBonus);
+  audienceTargetFit = Math.min(100, ratingPct + reviewBonus);
+
   if (creator.rating >= 4.8) {
     explanations.push({
-      factor: 'Performance & Reviews',
-      score: performanceFit,
+      factor: 'Audience & Quality Fit (20%)',
+      score: audienceTargetFit,
       type: 'positive',
-      detail: `Top-tier reliability rating of ${creator.rating}★ backed by ${creator.reviewCount} client reviews.`,
+      detail: `Outstanding audience reception rating of ${creator.rating}★ across ${creator.reviewCount} reviews.`,
     });
   } else {
     explanations.push({
-      factor: 'Performance & Reviews',
-      score: performanceFit,
+      factor: 'Audience & Quality Fit (20%)',
+      score: audienceTargetFit,
       type: 'neutral',
-      detail: `Solid customer satisfaction with a ${creator.rating}★ rating.`,
+      detail: `Solid audience satisfaction rating of ${creator.rating}★.`,
     });
   }
 
-  // 4. Budget Compatibility (20%)
+  // 3. Budget Compatibility (15%)
   const maxBudget = brief.budget?.max || 5000;
-  // Estimate estimated creator project deliverable cost (approx. 20-30 hours or rate)
   const estimatedCost = creator.hourlyRate * 25;
-  let budgetFit = 100;
+  let budgetCompatibility = 100;
+
   if (estimatedCost <= maxBudget) {
-    budgetFit = 100;
+    budgetCompatibility = 100;
     explanations.push({
-      factor: 'Budget Alignment',
+      factor: 'Budget Compatibility (15%)',
       score: 100,
       type: 'positive',
-      detail: `Rate of ${formatUSD(creator.hourlyRate)}/hr fits comfortably within campaign budget ($${maxBudget.toLocaleString()}).`,
+      detail: `Estimated deliverable pricing (${formatUSD(creator.hourlyRate)}/hr) fits comfortably within campaign budget ($${maxBudget.toLocaleString()}).`,
     });
   } else if (estimatedCost <= maxBudget * 1.25) {
-    budgetFit = 75;
+    budgetCompatibility = 75;
+    missingCriteria.push(`Rate (${formatUSD(creator.hourlyRate)}/hr) slightly exceeds target budget cap`);
     explanations.push({
-      factor: 'Budget Alignment',
+      factor: 'Budget Compatibility (15%)',
       score: 75,
       type: 'warning',
-      detail: `Rate (${formatUSD(creator.hourlyRate)}/hr) slightly exceeds target budget cap. Room for volume negotiation.`,
+      detail: `Creator rate slightly exceeds target campaign cap. Opportunity for bundle rate adjustment.`,
     });
   } else {
-    budgetFit = 45;
+    budgetCompatibility = 40;
+    missingCriteria.push(`Deliverable cost exceeds campaign budget by >25%`);
     explanations.push({
-      factor: 'Budget Alignment',
-      score: 45,
+      factor: 'Budget Compatibility (15%)',
+      score: 40,
       type: 'warning',
-      detail: `Creator rate exceeds target campaign cap. Premium tier tier rates apply.`,
+      detail: `Above campaign cap ($${creator.hourlyRate}/hr vs $${maxBudget.toLocaleString()} max project budget).`,
     });
   }
 
-  // 5. Brand Safety & Verification (15%)
-  const brandSafetyFit = creator.verified ? 98 : 80;
-  if (creator.verified) {
+  // 4. Platform & Content-Format Fit (15%)
+  let platformFormatFit = 70;
+  const briefChannels = brief.channels || [];
+  const socialPlatforms = creator.socialLinks ? Object.keys(creator.socialLinks).map((s) => s.toLowerCase()) : [];
+
+  const platformMatches = briefChannels.filter((c) =>
+    socialPlatforms.some((p) => p.includes(c.toLowerCase()) || c.toLowerCase().includes(p))
+  );
+
+  if (platformMatches.length > 0) {
+    platformFormatFit = 95;
     explanations.push({
-      factor: 'Brand Safety & Trust',
-      score: 98,
+      factor: 'Platform & Format Fit (15%)',
+      score: 95,
       type: 'positive',
-      detail: `Verified creator badge confirmed with active identity and portfolio check.`,
+      detail: `Active on target campaign channels: ${platformMatches.join(', ')}.`,
+    });
+  } else if (socialPlatforms.length >= 2) {
+    platformFormatFit = 85;
+    explanations.push({
+      factor: 'Platform & Format Fit (15%)',
+      score: 85,
+      type: 'positive',
+      detail: `Multi-channel distribution active across ${socialPlatforms.join(', ')}.`,
+    });
+  } else {
+    platformFormatFit = 65;
+    explanations.push({
+      factor: 'Platform & Format Fit (15%)',
+      score: 65,
+      type: 'neutral',
+      detail: `Deliverable format compatible with campaign specifications.`,
+    });
+  }
+
+  // 5. Portfolio Relevance (10%)
+  const portfolioRelevance = creator.portfolioIds && creator.portfolioIds.length >= 3 ? 95 : creator.portfolioIds?.length ? 75 : 50;
+  if (creator.portfolioIds && creator.portfolioIds.length >= 3) {
+    explanations.push({
+      factor: 'Portfolio Depth & Evidence (10%)',
+      score: 95,
+      type: 'positive',
+      detail: `Verified portfolio with ${creator.portfolioIds.length} work samples demonstrating commercial versatility.`,
     });
   } else {
     explanations.push({
-      factor: 'Brand Safety & Trust',
-      score: 80,
+      factor: 'Portfolio Depth & Evidence (10%)',
+      score: portfolioRelevance,
       type: 'neutral',
-      detail: `Standard profile verification in progress.`,
+      detail: `Portfolio contains ${creator.portfolioIds?.length || 0} work samples.`,
     });
   }
 
-  // Weighted overall calculation
+  // 6. Location & Language Fit (10%)
+  let locationLanguageFit = 85;
+  const targetLocations = brief.targetAudience?.locations || [];
+  const matchesLocation = targetLocations.some((loc) =>
+    creator.location.toLowerCase().includes(loc.toLowerCase())
+  );
+
+  if (matchesLocation || targetLocations.length === 0) {
+    locationLanguageFit = 95;
+    explanations.push({
+      factor: 'Location & Language Fit (10%)',
+      score: 95,
+      type: 'positive',
+      detail: `Geographic market (${creator.location}) aligns with campaign distribution region.`,
+    });
+  } else {
+    locationLanguageFit = 75;
+    explanations.push({
+      factor: 'Location & Language Fit (10%)',
+      score: 75,
+      type: 'neutral',
+      detail: `Available for remote collaboration in ${creator.timezone || 'target timezone'}.`,
+    });
+  }
+
+  // Weighted overall calculation: 30% + 20% + 15% + 15% + 10% + 10% = 100%
   const weighted =
-    nicheRelevance * 0.25 +
-    platformFit * 0.2 +
-    performanceFit * 0.2 +
-    budgetFit * 0.2 +
-    brandSafetyFit * 0.15;
+    nicheRelevance * 0.30 +
+    audienceTargetFit * 0.20 +
+    budgetCompatibility * 0.15 +
+    platformFormatFit * 0.15 +
+    portfolioRelevance * 0.10 +
+    locationLanguageFit * 0.10;
 
   const overallScore = Math.min(100, Math.max(30, Math.round(weighted)));
 
@@ -256,11 +307,13 @@ export function computeCreatorMatch(creator: Creator, brief: CreativeBrief | nul
     matchTier,
     breakdown: {
       nicheRelevance,
-      platformFit,
-      performanceFit,
-      budgetFit,
-      brandSafetyFit,
+      audienceTargetFit,
+      budgetCompatibility,
+      platformFormatFit,
+      portfolioRelevance,
+      locationLanguageFit,
     },
+    missingCriteria,
     explanations,
   };
 }
@@ -295,7 +348,7 @@ function MatchBreakdownModal({
       <div className="bg-navy-900 border border-navy-700 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 text-navy-400 hover:text-white p-1 rounded-lg"
+          className="absolute top-5 right-5 text-navy-400 hover:text-white p-1 rounded-lg cursor-pointer"
         >
           <X size={20} />
         </button>
@@ -317,9 +370,9 @@ function MatchBreakdownModal({
         </div>
 
         {/* Overall Score Banner */}
-        <div className={cn('p-4 rounded-xl border flex items-center justify-between mb-6', tierColor)}>
+        <div className={cn('p-4 rounded-xl border flex items-center justify-between mb-5', tierColor)}>
           <div>
-            <p className="text-xs uppercase tracking-wider font-semibold opacity-80">Algorithmic Match Score</p>
+            <p className="text-xs uppercase tracking-wider font-semibold opacity-80">AuraMatch 6-Factor Fit</p>
             <p className="text-2xl font-extrabold mt-0.5">{match.overallScore}% · {match.matchTier}</p>
           </div>
           <div className="h-12 w-12 rounded-full border-2 border-current flex items-center justify-center font-bold text-lg">
@@ -327,24 +380,25 @@ function MatchBreakdownModal({
           </div>
         </div>
 
-        {/* Score Factors */}
-        <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider mb-3">
-          Score Breakdown by Dimension
+        {/* 6-Dimension Score Breakdown */}
+        <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider mb-2.5">
+          Score Breakdown by Criteria
         </h3>
-        <div className="space-y-3 mb-6">
+        <div className="space-y-2.5 mb-5">
           {[
-            { label: 'Niche & Category Fit (25%)', score: match.breakdown.nicheRelevance },
-            { label: 'Platform & Channels (20%)', score: match.breakdown.platformFit },
-            { label: 'Performance & Quality (20%)', score: match.breakdown.performanceFit },
-            { label: 'Budget Compatibility (20%)', score: match.breakdown.budgetFit },
-            { label: 'Brand Safety & Trust (15%)', score: match.breakdown.brandSafetyFit },
+            { label: 'Niche Relevance (30%)', score: match.breakdown.nicheRelevance },
+            { label: 'Audience & Quality Fit (20%)', score: match.breakdown.audienceTargetFit },
+            { label: 'Budget Compatibility (15%)', score: match.breakdown.budgetCompatibility },
+            { label: 'Platform & Format Fit (15%)', score: match.breakdown.platformFormatFit },
+            { label: 'Portfolio Relevance (10%)', score: match.breakdown.portfolioRelevance },
+            { label: 'Location & Language Fit (10%)', score: match.breakdown.locationLanguageFit },
           ].map((item) => (
             <div key={item.label} className="text-xs">
               <div className="flex justify-between text-navy-300 mb-1">
                 <span>{item.label}</span>
                 <span className="font-semibold text-navy-100">{item.score}/100</span>
               </div>
-              <div className="w-full bg-navy-800 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-navy-800 h-1.5 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-violet-500 to-cyan-400 rounded-full"
                   style={{ width: `${item.score}%` }}
@@ -353,6 +407,16 @@ function MatchBreakdownModal({
             </div>
           ))}
         </div>
+
+        {/* Missing or Uncertain Criteria */}
+        {match.missingCriteria.length > 0 && (
+          <div className="p-3 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-300 mb-4 space-y-1">
+            <p className="font-bold">Missing or Sub-optimal Criteria:</p>
+            {match.missingCriteria.map((m, idx) => (
+              <p key={idx}>• {m}</p>
+            ))}
+          </div>
+        )}
 
         {/* Explanations List */}
         <h3 className="text-xs uppercase font-bold text-navy-400 tracking-wider mb-2">
@@ -387,9 +451,7 @@ function MatchBreakdownModal({
           <Button
             variant={isShortlisted ? 'secondary' : 'primary'}
             icon={isShortlisted ? BookmarkCheck : Bookmark}
-            onClick={() => {
-              onShortlistToggle();
-            }}
+            onClick={onShortlistToggle}
           >
             {isShortlisted ? 'In Shortlist' : 'Add to Shortlist'}
           </Button>
@@ -398,6 +460,7 @@ function MatchBreakdownModal({
     </div>
   );
 }
+
 
 // ────────────────────────────────────────────────────────────────────────────
 // DISCOVERY PAGE COMPONENT
