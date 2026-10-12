@@ -93,6 +93,18 @@ export const DEFAULT_USER_SETTINGS: UserSettings = {
     profileVisibility: 'public',
     discoverabilityEnabled: true,
     searchEngineIndexing: true,
+    portfolioVisibility: 'public',
+    contactInfoVisibility: 'workspace-only',
+    socialLinksVisibility: 'visible',
+    availabilityVisibility: 'visible',
+    collaborationHistoryVisibility: 'public',
+    messaging: {
+      allowedSenders: 'anyone',
+      allowNewMessageRequests: true,
+      showOnlineStatus: true,
+      readReceipts: true,
+      showPreviewsInNotifications: true,
+    },
   },
   aiPreferences: {
     responseLanguage: 'English',

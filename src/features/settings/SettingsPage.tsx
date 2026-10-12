@@ -33,6 +33,8 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { demoService } from '@/services/demoService';
+import { walletService } from '@/services/walletService';
+import { chatService } from '@/services/chatService';
 
 export function SettingsPage() {
   const navigate = useNavigate();
@@ -124,10 +126,26 @@ export function SettingsPage() {
   };
 
   const handleExportData = () => {
+    const currentUid = authUser?.id || 'usr_brand_1';
+    const userWallet = walletService.getWallet(currentUid);
+    const userTxns = walletService.getTransactions(currentUid);
+    const userConvs = chatService.getConversationsForUser(currentUid);
+
     const exportPayload = {
       exportDate: new Date().toISOString(),
       user: authUser,
       settings: userSettings,
+      wallet: {
+        currency: 'INR',
+        availableBalanceINR: (userWallet.availablePaise / 100).toFixed(2),
+        pendingBalanceINR: (userWallet.pendingPaise / 100).toFixed(2),
+        reservedBalanceINR: (userWallet.reservedPaise / 100).toFixed(2),
+        totalIncomingINR: (userWallet.totalIncomingPaise / 100).toFixed(2),
+        totalOutgoingINR: (userWallet.totalOutgoingPaise / 100).toFixed(2),
+        totalWithdrawnINR: (userWallet.totalWithdrawnPaise / 100).toFixed(2),
+        transactionsCount: userTxns.length,
+      },
+      conversationsCount: userConvs.length,
       creatorsCount: fullStoreState.creators.length,
       briefsCount: fullStoreState.briefs.length,
       shortlistCount: fullStoreState.shortlist.length,
@@ -146,13 +164,29 @@ export function SettingsPage() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    setSaveSuccess('Marketplace data exported to JSON.');
+    setSaveSuccess('Complete authenticated profile, privacy, wallet, and chat records exported.');
+    setTimeout(() => setSaveSuccess(null), 3000);
+  };
+
+  const handleRevokeSession = (sessionId: string) => {
+    const updatedSessions = userSettings.account.activeSessions.filter((s) => s.id !== sessionId);
+    updateUserSettings({
+      account: {
+        ...userSettings.account,
+        activeSessions: updatedSessions,
+      },
+    });
+    setSaveSuccess('Device session successfully revoked and invalidated.');
     setTimeout(() => setSaveSuccess(null), 3000);
   };
 
   const handleChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentPass || !newPass) return;
+    if (newPass.length < 6) {
+      alert('Password must be at least 6 characters long.');
+      return;
+    }
     if (newPass !== confirmPass) {
       alert('New passwords do not match.');
       return;
@@ -164,11 +198,14 @@ export function SettingsPage() {
       setCurrentPass('');
       setNewPass('');
       setConfirmPass('');
+      setSaveSuccess('Password credentials updated successfully.');
+      setTimeout(() => setSaveSuccess(null), 3000);
     }, 1500);
   };
 
   const handleDeleteAccount = () => {
-    if (deleteConfirmText.toLowerCase() === 'delete') {
+    if (deleteConfirmText.trim().toLowerCase() === 'delete') {
+      setShowDeleteModal(false);
       logout();
       navigate(ROUTES.welcome);
     }
@@ -470,7 +507,7 @@ export function SettingsPage() {
                       {!sess.isCurrent && (
                         <button
                           type="button"
-                          onClick={() => alert('Session revoked.')}
+                          onClick={() => handleRevokeSession(sess.id)}
                           className="text-xs text-rose-400 hover:underline font-medium"
                         >
                           Revoke
@@ -750,46 +787,286 @@ export function SettingsPage() {
                 </p>
               </div>
 
+              {/* SECTION A: PROFILE PRIVACY */}
               <div className="space-y-4">
+                <h3 className="text-xs font-bold text-navy-200 uppercase tracking-wider">
+                  Profile & Marketplace Visibility
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-navy-300">Profile Visibility</label>
+                    <select
+                      value={privacyForm.profileVisibility || 'public'}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          profileVisibility: e.target.value as any,
+                        })
+                      }
+                      className="w-full px-3.5 py-2 bg-navy-950 border border-navy-700 rounded-xl text-xs text-navy-100 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="public">Public (Visible to all marketplace search)</option>
+                      <option value="shortlist-only">Workspace Only (Direct invitees & shortlisted brands)</option>
+                      <option value="private">Private (Hidden from discovery)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-navy-300">Portfolio Work Visibility</label>
+                    <select
+                      value={privacyForm.portfolioVisibility || 'public'}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          portfolioVisibility: e.target.value as any,
+                        })
+                      }
+                      className="w-full px-3.5 py-2 bg-navy-950 border border-navy-700 rounded-xl text-xs text-navy-100 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="public">Public (Show all creative pieces)</option>
+                      <option value="workspace-only">Workspace Only (Collaborating brands)</option>
+                      <option value="hidden">Hidden (Portfolio under revision)</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-navy-300">Direct Contact Information</label>
+                    <select
+                      value={privacyForm.contactInfoVisibility || 'workspace-only'}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          contactInfoVisibility: e.target.value as any,
+                        })
+                      }
+                      className="w-full px-3.5 py-2 bg-navy-950 border border-navy-700 rounded-xl text-xs text-navy-100 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="workspace-only">Workspace Only (Masked until deal initiated)</option>
+                      <option value="visible">Visible to All Authenticated Users</option>
+                      <option value="hidden">Hidden Completely</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-medium text-navy-300">Collaboration History & Deals</label>
+                    <select
+                      value={privacyForm.collaborationHistoryVisibility || 'public'}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          collaborationHistoryVisibility: e.target.value as any,
+                        })
+                      }
+                      className="w-full px-3.5 py-2 bg-navy-950 border border-navy-700 rounded-xl text-xs text-navy-100 focus:outline-none focus:border-violet-500"
+                    >
+                      <option value="public">Public (Show verified campaign ratings)</option>
+                      <option value="workspace-only">Workspace Only</option>
+                      <option value="hidden">Hidden</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2">
+                  <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
+                    <div>
+                      <h4 className="text-xs font-semibold text-navy-200">
+                        Marketplace AI Discoverability
+                      </h4>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Allow AuraMatch algorithm to recommend your profile for high-value campaign briefs.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacyForm.discoverabilityEnabled !== false}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          discoverabilityEnabled: e.target.checked,
+                        })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
+                    <div>
+                      <h4 className="text-xs font-semibold text-navy-200">
+                        Public Social & Portfolio Links
+                      </h4>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Display Instagram, YouTube, and Behance links on your public creator card.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacyForm.socialLinksVisibility !== 'hidden'}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          socialLinksVisibility: e.target.checked ? 'visible' : 'hidden',
+                        })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+                </div>
+              </div>
+
+              {/* SECTION B: MESSAGING PRIVACY */}
+              <div className="space-y-4 pt-4 border-t border-navy-800">
+                <h3 className="text-xs font-bold text-navy-200 uppercase tracking-wider">
+                  Workspace Messaging & Chat Privacy
+                </h3>
+
                 <div className="space-y-1.5">
-                  <label className="text-xs font-medium text-navy-300">Profile Visibility</label>
+                  <label className="text-xs font-medium text-navy-300">Who Can Send You Direct Messages</label>
                   <select
-                    value={privacyForm.profileVisibility}
+                    value={privacyForm.messaging?.allowedSenders || 'anyone'}
                     onChange={(e) =>
                       setPrivacyForm({
                         ...privacyForm,
-                        profileVisibility: e.target.value as any,
+                        messaging: {
+                          ...(privacyForm.messaging || {
+                            allowNewMessageRequests: true,
+                            showOnlineStatus: true,
+                            readReceipts: true,
+                            showPreviewsInNotifications: true,
+                          }),
+                          allowedSenders: e.target.value as any,
+                        },
                       })
                     }
                     className="w-full px-3.5 py-2 bg-navy-950 border border-navy-700 rounded-xl text-xs text-navy-100 focus:outline-none focus:border-violet-500"
                   >
-                    <option value="public">Public (Visible to all brands and search)</option>
-                    <option value="shortlist-only">Shortlist Only (Visible only to direct invitations)</option>
-                    <option value="private">Private (Hidden from marketplace discovery)</option>
+                    <option value="anyone">Anyone on GenAura (Brands and verified Creators)</option>
+                    <option value="verified-only">Verified Creators and Registered Brands Only</option>
+                    <option value="contacts-only">Active Collaboration Contacts Only</option>
                   </select>
                 </div>
 
-                <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
-                  <div>
-                    <h4 className="text-xs font-semibold text-navy-200">
-                      Marketplace Discoverability
-                    </h4>
-                    <p className="text-[11px] text-navy-400 mt-0.5">
-                      Allow AuraMatch to include your portfolio in campaign matching calculations.
-                    </p>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={privacyForm.discoverabilityEnabled}
-                    onChange={(e) =>
-                      setPrivacyForm({
-                        ...privacyForm,
-                        discoverabilityEnabled: e.target.checked,
-                      })
-                    }
-                    className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
-                  />
-                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
+                    <div>
+                      <h4 className="text-xs font-semibold text-navy-200">
+                        Allow New Collaboration Message Requests
+                      </h4>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Accept inbound messages from brands before an official proposal is dispatched.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacyForm.messaging?.allowNewMessageRequests !== false}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          messaging: {
+                            ...(privacyForm.messaging || {
+                              allowedSenders: 'anyone',
+                              showOnlineStatus: true,
+                              readReceipts: true,
+                              showPreviewsInNotifications: true,
+                            }),
+                            allowNewMessageRequests: e.target.checked,
+                          },
+                        })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
+                    <div>
+                      <h4 className="text-xs font-semibold text-navy-200">
+                        Online Status Visibility
+                      </h4>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Display a green active indicator when you are online in Workspace Chat.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacyForm.messaging?.showOnlineStatus !== false}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          messaging: {
+                            ...(privacyForm.messaging || {
+                              allowedSenders: 'anyone',
+                              allowNewMessageRequests: true,
+                              readReceipts: true,
+                              showPreviewsInNotifications: true,
+                            }),
+                            showOnlineStatus: e.target.checked,
+                          },
+                        })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
+                    <div>
+                      <h4 className="text-xs font-semibold text-navy-200">
+                        Send Read Receipts
+                      </h4>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        Allow message senders to see cyan double-checkmarks when you have read their messages.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacyForm.messaging?.readReceipts !== false}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          messaging: {
+                            ...(privacyForm.messaging || {
+                              allowedSenders: 'anyone',
+                              allowNewMessageRequests: true,
+                              showOnlineStatus: true,
+                              showPreviewsInNotifications: true,
+                            }),
+                            readReceipts: e.target.checked,
+                          },
+                        })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+
+                  <label className="flex items-center justify-between p-3.5 rounded-xl bg-navy-950 border border-navy-800 cursor-pointer">
+                    <div>
+                      <h4 className="text-xs font-semibold text-navy-200">
+                        Show Message Previews in Notifications
+                      </h4>
+                      <p className="text-[11px] text-navy-400 mt-0.5">
+                        When disabled, notification alerts show &ldquo;New message received&rdquo; without exposing sensitive content.
+                      </p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={privacyForm.messaging?.showPreviewsInNotifications !== false}
+                      onChange={(e) =>
+                        setPrivacyForm({
+                          ...privacyForm,
+                          messaging: {
+                            ...(privacyForm.messaging || {
+                              allowedSenders: 'anyone',
+                              allowNewMessageRequests: true,
+                              showOnlineStatus: true,
+                              readReceipts: true,
+                            }),
+                            showPreviewsInNotifications: e.target.checked,
+                          },
+                        })
+                      }
+                      className="rounded border-navy-700 text-violet-600 bg-navy-900 h-4 w-4"
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Data Export Box */}

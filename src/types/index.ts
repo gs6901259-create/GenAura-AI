@@ -405,6 +405,18 @@ export interface UserSettings {
     profileVisibility: 'public' | 'shortlist-only' | 'private';
     discoverabilityEnabled: boolean;
     searchEngineIndexing: boolean;
+    portfolioVisibility?: 'public' | 'workspace-only' | 'hidden';
+    contactInfoVisibility?: 'visible' | 'workspace-only' | 'hidden';
+    socialLinksVisibility?: 'visible' | 'hidden';
+    availabilityVisibility?: 'visible' | 'hidden';
+    collaborationHistoryVisibility?: 'public' | 'workspace-only' | 'hidden';
+    messaging?: {
+      allowedSenders: 'anyone' | 'verified-only' | 'contacts-only';
+      allowNewMessageRequests: boolean;
+      showOnlineStatus: boolean;
+      readReceipts: boolean;
+      showPreviewsInNotifications: boolean;
+    };
   };
   aiPreferences: {
     responseLanguage: string;
@@ -482,6 +494,9 @@ export const ROUTES = {
   projectDetail:    '/projects/:id',
   deals:            '/deals',
   dealDetail:       '/deals/:id',
+  chat:             '/chat',
+  chatConversation: '/chat/:id',
+  wallet:           '/wallet',
   assistant:        '/assistant',
   notifications:    '/notifications',
   settings:         '/settings',
@@ -491,3 +506,5 @@ export const ROUTES = {
 export type RoutePath = typeof ROUTES[keyof typeof ROUTES];
 
 export * from './deal';
+export * from './chat';
+export * from './wallet';
