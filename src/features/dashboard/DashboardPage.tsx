@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useMemo } from 'react';
 import {
   Users, FileText, Bookmark, FolderKanban, Zap, TrendingUp,
   Plus, Search, Star, ArrowRight, Clock, CheckCircle2, CircleDot,
@@ -74,20 +75,42 @@ export function DashboardPage() {
   const briefs    = useAppStore((s) => s.briefs);
   const shortlist = useAppStore((s) => s.shortlist);
   const projects  = useAppStore((s) => s.projects);
-  const stats     = useAppStore((s) => s.getDashboardStats());
+
+  // Derived stats memoized from store slices
+  const stats = useMemo(() => ({
+    totalCreators:       creators.length,
+    availableCreators:   creators.filter((c) => c.status === 'available').length,
+    publishedBriefs:     briefs.filter((b) => b.status === 'published').length,
+    shortlistedCreators: shortlist.length,
+    pendingRequests:     projects.filter((p) => p.status === 'pending').length,
+    activeEngagements:   projects.filter(
+      (p) => p.status === 'in-progress' || p.status === 'review'
+    ).length,
+  }), [creators, briefs, shortlist, projects]);
 
   // Derived views
-  const featuredCreators  = creators.filter((c) => c.featured).slice(0, 3);
-  const recentBriefs      = [...briefs]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 4);
-  const recentProjects    = [...projects]
-    .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
-    .slice(0, 4);
+  const featuredCreators = useMemo(
+    () => creators.filter((c) => c.featured).slice(0, 3),
+    [creators]
+  );
+  const recentBriefs = useMemo(
+    () =>
+      [...briefs]
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .slice(0, 4),
+    [briefs]
+  );
+  const recentProjects = useMemo(
+    () =>
+      [...projects]
+        .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+        .slice(0, 4),
+    [projects]
+  );
 
-  // For project activity: resolve creator + brief names
-  const getCreator = useAppStore((s) => s.getCreatorById);
-  const getBrief   = useAppStore((s) => s.getBriefById);
+  // For project activity: resolve creator + brief names efficiently
+  const creatorMap = useMemo(() => new Map(creators.map((c) => [c.id, c])), [creators]);
+  const briefMap   = useMemo(() => new Map(briefs.map((b) => [b.id, b])), [briefs]);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
@@ -329,8 +352,8 @@ export function DashboardPage() {
         <Card padding="none">
           <div className="divide-y divide-navy-700/50">
             {recentProjects.map((project) => {
-              const creator = getCreator(project.creatorId);
-              const brief   = getBrief(project.briefId);
+              const creator = creatorMap.get(project.creatorId);
+              const brief   = briefMap.get(project.briefId);
               const unread  = project.messages.filter((m) => !m.read && m.senderType === 'creator').length;
               return (
                 <div
