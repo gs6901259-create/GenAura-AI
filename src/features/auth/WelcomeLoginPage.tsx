@@ -27,8 +27,12 @@ import {
   Palette,
   ChevronRight,
   Check,
+  X,
+  RotateCcw,
+  Info,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { demoService } from '@/services/demoService';
 
 export function WelcomeLoginPage() {
   const navigate = useNavigate();
@@ -50,23 +54,26 @@ export function WelcomeLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  // Demo selection modal
+  const [showDemoModal, setShowDemoModal] = useState(false);
+
   // Forgot password modal
   const [showForgotModal, setShowForgotModal] = useState(false);
   const [forgotEmail, setForgotEmail] = useState('');
   const [forgotSent, setForgotSent] = useState(false);
 
-  // Quick 1-Click Demo Login
-  const handleQuickDemoLogin = (targetRole: UserPersona) => {
+  // Enter Demo Mode with isolated seed data
+  const handleEnterDemo = (targetRole: UserPersona) => {
     setIsLoading(true);
     setError(null);
+    setShowDemoModal(false);
     setTimeout(() => {
-      const demoUser = DEFAULT_DEMO_USERS[targetRole];
-      login(demoUser);
+      demoService.enterDemo(targetRole);
       setIsLoading(false);
       if (targetRole === 'creator') navigate(ROUTES.studio);
       else if (targetRole === 'admin') navigate(ROUTES.adminVerification);
       else navigate(ROUTES.dashboard);
-    }, 400);
+    }, 350);
   };
 
   // Sign In Submission
@@ -270,33 +277,31 @@ export function WelcomeLoginPage() {
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <button
               type="button"
+              onClick={() => setShowDemoModal(true)}
+              className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 via-indigo-600 to-cyan-500 text-white font-bold text-sm shadow-glow-violet hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2 group"
+            >
+              <Sparkles size={16} className="text-cyan-300 group-hover:rotate-12 transition-transform" />
+              <span>Explore GenAura AI Demo</span>
+              <ArrowRight size={15} />
+            </button>
+
+            <button
+              type="button"
               onClick={() => {
                 setAuthTab('register');
                 document.getElementById('auth-panel')?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="px-6 py-3 rounded-xl gradient-brand text-white font-semibold text-sm shadow-glow-violet hover:opacity-95 transition-all flex items-center gap-2"
+              className="px-5 py-3 rounded-xl bg-navy-800/80 hover:bg-navy-800 text-navy-200 border border-navy-700 font-semibold text-sm transition-all"
             >
-              <span>Get Started</span>
-              <ArrowRight size={16} />
+              <span>Create Account</span>
             </button>
 
             <button
               type="button"
               onClick={() => navigate(ROUTES.discovery)}
-              className="px-6 py-3 rounded-xl bg-navy-800/80 hover:bg-navy-800 text-navy-200 border border-navy-700 font-semibold text-sm transition-all"
+              className="px-4 py-3 text-xs font-semibold text-navy-400 hover:text-white transition-colors"
             >
-              Explore Creators
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setAuthTab('signin');
-                document.getElementById('auth-panel')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="px-4 py-3 text-xs font-semibold text-violet-300 hover:text-white transition-colors"
-            >
-              Sign In to Account →
+              Browse Creators →
             </button>
           </div>
         </div>
@@ -346,7 +351,7 @@ export function WelcomeLoginPage() {
               <div className="grid grid-cols-3 gap-2">
                 <button
                   type="button"
-                  onClick={() => handleQuickDemoLogin('brand')}
+                  onClick={() => handleEnterDemo('brand')}
                   disabled={isLoading}
                   className="px-2 py-2 rounded-lg bg-navy-800 hover:bg-violet-600/20 border border-navy-700 hover:border-violet-500/40 text-left text-xs transition-all flex items-center gap-1.5"
                 >
@@ -355,7 +360,7 @@ export function WelcomeLoginPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleQuickDemoLogin('creator')}
+                  onClick={() => handleEnterDemo('creator')}
                   disabled={isLoading}
                   className="px-2 py-2 rounded-lg bg-navy-800 hover:bg-cyan-600/20 border border-navy-700 hover:border-cyan-500/40 text-left text-xs transition-all flex items-center gap-1.5"
                 >
@@ -364,7 +369,7 @@ export function WelcomeLoginPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleQuickDemoLogin('admin')}
+                  onClick={() => handleEnterDemo('admin')}
                   disabled={isLoading}
                   className="px-2 py-2 rounded-lg bg-navy-800 hover:bg-amber-600/20 border border-navy-700 hover:border-amber-500/40 text-left text-xs transition-all flex items-center gap-1.5"
                 >
@@ -629,6 +634,150 @@ export function WelcomeLoginPage() {
                   setForgotSent(false);
                 }}
                 className="px-4 py-2 text-xs font-medium text-navy-400 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Explore GenAura AI Demo Role Modal ── */}
+      {showDemoModal && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Explore GenAura AI Demo Role Choice"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md animate-fadeIn"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowDemoModal(false);
+          }}
+        >
+          <div className="bg-navy-900 border border-violet-500/30 rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6">
+            {/* Header */}
+            <div className="flex items-start justify-between gap-4 pb-3 border-b border-navy-800">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/30 text-violet-300 text-[11px] font-semibold">
+                  <Sparkles size={12} className="text-violet-400" />
+                  <span>Interactive Presentation Mode</span>
+                </div>
+                <h3 className="text-xl font-bold text-white tracking-tight">
+                  Explore GenAura AI Demo
+                </h3>
+                <p className="text-xs text-navy-300">
+                  Select a simulated role to test marketplace features immediately using pre-seeded fictional data. No accounts or API credentials required.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowDemoModal(false)}
+                className="p-1 rounded-lg text-navy-400 hover:text-white hover:bg-navy-800 transition-colors"
+                aria-label="Close demo modal"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Role Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Brand Demo Card */}
+              <div className="bg-navy-950/80 border border-violet-500/30 hover:border-violet-500/60 rounded-xl p-4 flex flex-col justify-between space-y-4 transition-all group">
+                <div className="space-y-3">
+                  <div className="h-10 w-10 rounded-xl bg-violet-600/20 border border-violet-500/30 text-violet-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Building2 size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white flex items-center gap-1.5">
+                      <span>Brand Demo</span>
+                      <span className="text-[10px] px-1.5 py-0.2 rounded bg-violet-500/20 text-violet-300 border border-violet-500/30 font-medium">Recommended</span>
+                    </h4>
+                    <p className="text-[11px] text-navy-400 mt-0.5">Persona: Sarah Lin (Aura Luxury House)</p>
+                  </div>
+                  <ul className="text-[11px] text-navy-300 space-y-1.5 list-disc list-inside">
+                    <li>Discover 14 creators across 9 niches</li>
+                    <li>6-factor AuraMatch AI scoring</li>
+                    <li>Create briefs & save shortlists</li>
+                    <li>Send proposals & negotiate deals</li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleEnterDemo('brand')}
+                  disabled={isLoading}
+                  className="w-full py-2.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-semibold text-xs shadow-md transition-all flex items-center justify-center gap-1"
+                >
+                  <span>Launch Brand Demo</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+
+              {/* Creator Demo Card */}
+              <div className="bg-navy-950/80 border border-cyan-500/30 hover:border-cyan-500/60 rounded-xl p-4 flex flex-col justify-between space-y-4 transition-all group">
+                <div className="space-y-3">
+                  <div className="h-10 w-10 rounded-xl bg-cyan-600/20 border border-cyan-500/30 text-cyan-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <Palette size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Creator Demo</h4>
+                    <p className="text-[11px] text-navy-400 mt-0.5">Persona: Sarah Jenkins (@sarah_tech)</p>
+                  </div>
+                  <ul className="text-[11px] text-navy-300 space-y-1.5 list-disc list-inside">
+                    <li>Creator Studio & profile editor</li>
+                    <li>100-point AI verification rubric</li>
+                    <li>Portfolio showcase & rights manager</li>
+                    <li>Review proposals & counteroffer</li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleEnterDemo('creator')}
+                  disabled={isLoading}
+                  className="w-full py-2.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-semibold text-xs shadow-md transition-all flex items-center justify-center gap-1"
+                >
+                  <span>Launch Creator Demo</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+
+              {/* Admin Demo Card */}
+              <div className="bg-navy-950/80 border border-amber-500/30 hover:border-amber-500/60 rounded-xl p-4 flex flex-col justify-between space-y-4 transition-all group">
+                <div className="space-y-3">
+                  <div className="h-10 w-10 rounded-xl bg-amber-600/20 border border-amber-500/30 text-amber-400 flex items-center justify-center group-hover:scale-105 transition-transform">
+                    <ShieldCheck size={20} />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Admin Demo</h4>
+                    <p className="text-[11px] text-navy-400 mt-0.5">Persona: Alex Vance (Trust Reviewer)</p>
+                  </div>
+                  <ul className="text-[11px] text-navy-300 space-y-1.5 list-disc list-inside">
+                    <li>Admin creator verification queue</li>
+                    <li>Audit submission evidence</li>
+                    <li>Grade completeness & originality</li>
+                    <li>Simulated approval decision engine</li>
+                  </ul>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleEnterDemo('admin')}
+                  disabled={isLoading}
+                  className="w-full py-2.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-semibold text-xs shadow-md transition-all flex items-center justify-center gap-1"
+                >
+                  <span>Launch Admin Demo</span>
+                  <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Transparency Notice */}
+            <div className="pt-3 border-t border-navy-800 flex flex-wrap items-center justify-between gap-3 text-[11px] text-navy-400">
+              <span className="flex items-center gap-1.5 text-navy-400">
+                <Info size={13} className="text-violet-400 shrink-0" />
+                <span>Simulated demo mode. Actions are saved locally without external API calls or real payments.</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowDemoModal(false)}
+                className="text-xs text-navy-400 hover:text-white transition-colors"
               >
                 Close
               </button>
