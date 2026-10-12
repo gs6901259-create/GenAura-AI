@@ -17,6 +17,7 @@ import {
   Search,
   Bookmark,
   FolderKanban,
+  Handshake,
   Bot,
   Bell,
   Settings,
@@ -119,6 +120,14 @@ export function Sidebar() {
       label: 'Collaboration Requests',
       to: ROUTES.projects,
       icon: FolderKanban,
+    },
+    {
+      id: 'deals',
+      label: 'Smart Deal Room',
+      to: ROUTES.deals,
+      icon: Handshake,
+      badge: 'PRO',
+      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
     },
     {
       id: 'assistant',

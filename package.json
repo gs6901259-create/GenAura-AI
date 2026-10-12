@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "tsx --test tests/discoveryService.test.js tests/persistenceAndTypes.test.js tests/scoringEngine.test.js tests/shortlistService.test.js tests/collaborationWorkflow.test.ts tests/creatorStudioAndVerification.test.ts tests/premiumFeaturesAndAssistant.test.ts"
+    "test": "tsx --test tests/discoveryService.test.js tests/persistenceAndTypes.test.js tests/scoringEngine.test.js tests/shortlistService.test.js tests/collaborationWorkflow.test.ts tests/creatorStudioAndVerification.test.ts tests/premiumFeaturesAndAssistant.test.ts tests/smartDealRoom.test.ts"
   },
   "dependencies": {
     "@rolldown/binding-win32-x64-msvc": "^1.2.13",

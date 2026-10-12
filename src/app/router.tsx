@@ -11,6 +11,7 @@ import { CreatorsPage, CreatorDetailPage } from '@/features/creators';
 import { DiscoveryPage, ShortlistPage } from '@/features/discovery';
 import { BriefsPage, BriefNewPage, BriefDetailPage } from '@/features/briefs';
 import { ProjectsPage, ProjectDetailPage } from '@/features/projects';
+import { DealRoomOverview, DealDetailPage } from '@/features/dealRoom';
 import { CreatorStudioPage } from '@/features/studio/CreatorStudioPage';
 import { AdminVerificationQueue } from '@/features/admin/AdminVerificationQueue';
 import { SettingsPage } from '@/features/settings';
@@ -101,6 +102,10 @@ const router = createBrowserRouter([
       // Projects (Member 5)
       { path: 'projects',     element: <ProjectsPage /> },
       { path: 'projects/:id', element: <ProjectDetailPage /> },
+
+      // Smart Deal Room
+      { path: 'deals',     element: <DealRoomOverview /> },
+      { path: 'deals/:id', element: <DealDetailPage /> },
 
       // Aura AI Assistant
       { path: 'assistant', element: <AuraAssistantPage /> },

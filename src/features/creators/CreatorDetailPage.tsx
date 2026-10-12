@@ -11,6 +11,8 @@ import { CreatorTools } from './CreatorTools';
 import { CreatorVerification } from './CreatorVerification';
 import { CreatorProfileEditModal } from './CreatorProfileEditModal';
 import { PortfolioManager } from '../portfolio/PortfolioManager';
+import { ProposalFormModal } from '@/features/dealRoom';
+import { dealService } from '@/services/dealService';
 
 export function CreatorDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -22,11 +24,16 @@ export function CreatorDetailPage() {
     shortlist,
     addToShortlist,
     removeFromShortlist,
+    creators,
+    briefs,
+    authUser,
+    addNotification,
   } = useAppStore();
 
   const creator = id ? getCreatorById(asCreatorId(id)) : undefined;
 
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDealModalOpen, setIsDealModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'portfolio' | 'skills' | 'tools'>('portfolio');
 
   if (!creator) {
@@ -89,11 +96,12 @@ export function CreatorDetailPage() {
       {/* Main Header */}
       <CreatorProfileHeader
         creator={creator}
-        isOwner={true}
+        isOwner={false}
         onEditProfile={() => setIsEditModalOpen(true)}
         onShortlist={handleToggleShortlist}
         isShortlisted={isShortlisted}
         onContact={() => navigate('/briefs/new')}
+        onInitiateDeal={() => setIsDealModalOpen(true)}
       />
 
       {/* Navigation Tabs */}
@@ -177,6 +185,62 @@ export function CreatorDetailPage() {
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleProfileSave}
       />
+
+      {/* Smart Deal Proposal Modal */}
+      {isDealModalOpen && (
+        <ProposalFormModal
+          creators={creators}
+          briefs={briefs}
+          preselectedCreator={creator}
+          onClose={() => setIsDealModalOpen(false)}
+          onSubmit={(params) => {
+            const res = dealService.createProposal({
+              title: params.title,
+              campaignObjective: params.campaignObjective,
+              briefId: params.brief?.id,
+              briefTitle: params.brief?.title,
+              brand: {
+                id: 'brand-current',
+                role: 'brand',
+                name: authUser?.name || 'GenAura Brand Sponsor',
+                handle: `@${authUser?.username || 'genaurabrand'}`,
+                avatarUrl:
+                  authUser?.avatarUrl ||
+                  'https://api.dicebear.com/7.x/identicon/svg?seed=brand',
+                email: authUser?.email,
+              },
+              creator: {
+                id: creator.id,
+                role: 'creator',
+                name: creator.name,
+                handle: creator.handle,
+                avatarUrl: creator.avatarUrl,
+                email: creator.email,
+              },
+              terms: params.terms,
+              asDraft: params.asDraft,
+              senderRole: 'brand',
+              senderName: authUser?.name || 'Brand Lead',
+            });
+
+            if (res.success && res.deal) {
+              addNotification({
+                id: `notif_${Date.now()}`,
+                title: params.asDraft ? 'Deal Draft Saved' : 'Deal Proposal Dispatched',
+                message: `Proposal "${res.deal.title}" was ${
+                  params.asDraft ? 'saved as draft' : 'sent to ' + creator.name
+                }.`,
+                type: 'collaboration',
+                timestamp: new Date().toISOString(),
+                read: false,
+                linkTo: `/deals/${res.deal.id}`,
+              });
+              setIsDealModalOpen(false);
+              navigate(`/deals/${res.deal.id}`);
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
