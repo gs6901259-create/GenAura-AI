@@ -1,9 +1,10 @@
 /**
- * GenAura AI — Collapsible Navigation Sidebar
- * ============================================
+ * GenAura AI — Collapsible Navigation Sidebar & Mobile Navigation
+ * ================================================================
  * Supports expanded (w-64) and collapsed (w-20) states,
- * all 14 required navigation targets, active indicators,
- * role-aware filtering, notifications badge, and sign-out confirmation.
+ * cohesive Creator Hub grouping with clear active indicators,
+ * role-aware filtering, notifications badge, dual light/dark themes,
+ * and sign-out confirmation.
  */
 import { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
@@ -87,7 +88,8 @@ export function Sidebar() {
       to: ROUTES.studio,
       icon: Palette,
       badge: 'PRO',
-      badgeColor: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30',
+      badgeColor:
+        'bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border-cyan-300 dark:border-cyan-500/30',
       roles: ['creator', 'admin'],
     },
     {
@@ -103,7 +105,8 @@ export function Sidebar() {
       to: currentPersona === 'admin' ? ROUTES.adminVerification : ROUTES.studio,
       icon: ShieldCheck,
       badge: pendingVerificationCount > 0 ? pendingVerificationCount : undefined,
-      badgeColor: 'bg-amber-500/20 text-amber-300 border-amber-500/40',
+      badgeColor:
+        'bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-500/40',
     },
   ];
 
@@ -142,7 +145,8 @@ export function Sidebar() {
       to: ROUTES.deals,
       icon: Handshake,
       badge: 'PRO',
-      badgeColor: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30',
+      badgeColor:
+        'bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-500/30',
     },
     {
       id: 'assistant',
@@ -151,7 +155,7 @@ export function Sidebar() {
       icon: Bot,
       isAiProminent: true,
       badge: 'AI',
-      badgeColor: 'bg-violet-500 text-white shadow-glow-violet',
+      badgeColor: 'bg-violet-600 text-white shadow-glow-violet',
     },
   ];
 
@@ -163,7 +167,8 @@ export function Sidebar() {
       to: ROUTES.notifications,
       icon: Bell,
       badge: unreadNotifCount > 0 ? unreadNotifCount : undefined,
-      badgeColor: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+      badgeColor:
+        'bg-violet-100 dark:bg-violet-500/20 text-violet-800 dark:text-violet-300 border-violet-300 dark:border-violet-500/30',
     },
     { id: 'settings', label: 'Settings', to: ROUTES.settings, icon: Settings },
     { id: 'help', label: 'Help and Support', to: ROUTES.help, icon: HelpCircle },
@@ -202,10 +207,10 @@ export function Sidebar() {
           'group flex items-center justify-between rounded-xl px-3 py-2 text-xs font-semibold transition-all duration-150',
           isChild && 'py-1.5 pl-3.5 pr-2.5 text-[11px] rounded-lg',
           isActive
-            ? 'bg-violet-600/25 text-violet-200 border border-violet-500/40 shadow-sm'
+            ? 'bg-violet-100 dark:bg-violet-600/25 text-violet-900 dark:text-violet-200 border border-violet-300 dark:border-violet-500/40 shadow-xs font-bold'
             : item.isAiProminent
-            ? 'text-cyan-300 hover:bg-cyan-500/10 border border-cyan-500/30'
-            : 'text-navy-400 hover:text-navy-100 hover:bg-navy-800/80 border border-transparent'
+            ? 'text-cyan-700 dark:text-cyan-300 hover:bg-cyan-50 dark:hover:bg-cyan-500/10 border border-cyan-300 dark:border-cyan-500/30'
+            : 'text-slate-600 dark:text-navy-400 hover:text-slate-900 dark:hover:text-navy-100 hover:bg-slate-100/90 dark:hover:bg-navy-800/80 border border-transparent'
         )}
       >
         <div className="flex items-center gap-2.5 min-w-0">
@@ -214,10 +219,10 @@ export function Sidebar() {
             className={cn(
               'shrink-0 transition-colors',
               isActive
-                ? 'text-violet-400'
+                ? 'text-violet-600 dark:text-violet-400'
                 : item.isAiProminent
-                ? 'text-cyan-400'
-                : 'text-navy-500 group-hover:text-navy-300'
+                ? 'text-cyan-600 dark:text-cyan-400'
+                : 'text-slate-400 dark:text-navy-500 group-hover:text-violet-600 dark:group-hover:text-navy-300'
             )}
           />
           {!collapsed && <span className="truncate">{item.label}</span>}
@@ -227,7 +232,8 @@ export function Sidebar() {
           <span
             className={cn(
               'px-1.5 py-0.5 rounded text-[10px] font-bold border shrink-0',
-              item.badgeColor || 'bg-navy-800 text-navy-300 border-navy-700'
+              item.badgeColor ||
+                'bg-slate-100 dark:bg-navy-800 text-slate-700 dark:text-navy-300 border-slate-200 dark:border-navy-700'
             )}
           >
             {item.badge}
@@ -241,13 +247,13 @@ export function Sidebar() {
     <>
       <aside
         className={cn(
-          'hidden lg:flex flex-col h-screen bg-navy-900 border-r border-navy-700/60 sticky top-0 transition-all duration-300 z-30',
+          'hidden lg:flex flex-col h-screen bg-white dark:bg-navy-900 border-r border-slate-200 dark:border-navy-700/60 sticky top-0 transition-all duration-300 z-30',
           collapsed ? 'w-20' : 'w-64'
         )}
         aria-label="Main navigation"
       >
         {/* Brand Header */}
-        <div className="flex items-center justify-between px-4 py-4 border-b border-navy-800">
+        <div className="flex items-center justify-between px-4 py-4 border-b border-slate-200 dark:border-navy-800">
           <div
             onClick={() => navigate(ROUTES.dashboard)}
             className="flex items-center gap-3 cursor-pointer shrink-0"
@@ -258,7 +264,7 @@ export function Sidebar() {
             {!collapsed && (
               <span className="font-bold text-lg tracking-tight">
                 <span className="gradient-brand-text">GenAura</span>
-                <span className="text-navy-300"> AI</span>
+                <span className="text-slate-800 dark:text-navy-300"> AI</span>
               </span>
             )}
           </div>
@@ -266,7 +272,7 @@ export function Sidebar() {
           <button
             type="button"
             onClick={() => setCollapsed(!collapsed)}
-            className="p-1.5 rounded-lg text-navy-400 hover:text-white hover:bg-navy-800 transition-colors"
+            className="p-1.5 rounded-lg text-slate-400 dark:text-navy-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
@@ -280,15 +286,15 @@ export function Sidebar() {
 
           {/* Unified Creator Hub Group */}
           {!collapsed ? (
-            <div className="my-1.5 rounded-xl border border-navy-800/80 bg-navy-950/40 overflow-hidden">
+            <div className="my-1.5 rounded-xl border border-slate-200 dark:border-navy-800/80 bg-slate-50/80 dark:bg-navy-950/40 overflow-hidden shadow-xs">
               <button
                 type="button"
                 onClick={() => setCreatorHubOpen(!creatorHubOpen)}
                 className={cn(
                   'w-full flex items-center justify-between px-3 py-2 text-xs font-semibold transition-colors',
                   isCreatorHubRoute
-                    ? 'text-violet-200 bg-violet-600/15'
-                    : 'text-navy-300 hover:text-white hover:bg-navy-800/60'
+                    ? 'text-violet-900 dark:text-violet-200 bg-violet-100/70 dark:bg-violet-600/15'
+                    : 'text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/90 dark:hover:bg-navy-800/60'
                 )}
                 aria-expanded={creatorHubOpen}
               >
@@ -298,7 +304,7 @@ export function Sidebar() {
                       'h-6 w-6 rounded-lg flex items-center justify-center text-xs transition-colors',
                       isCreatorHubRoute
                         ? 'bg-violet-600 text-white shadow-sm'
-                        : 'bg-navy-800 text-violet-400 border border-navy-700'
+                        : 'bg-white dark:bg-navy-800 text-violet-600 dark:text-violet-400 border border-slate-200 dark:border-navy-700'
                     )}
                   >
                     <Palette size={13} />
@@ -308,14 +314,14 @@ export function Sidebar() {
 
                 <div className="flex items-center gap-1.5">
                   {pendingVerificationCount > 0 && (
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
                       {pendingVerificationCount}
                     </span>
                   )}
                   <ChevronRight
                     size={13}
                     className={cn(
-                      'text-navy-400 transition-transform duration-200',
+                      'text-slate-400 dark:text-navy-400 transition-transform duration-200',
                       creatorHubOpen && 'rotate-90'
                     )}
                   />
@@ -323,7 +329,7 @@ export function Sidebar() {
               </button>
 
               {creatorHubOpen && (
-                <div className="px-2 py-1.5 space-y-0.5 border-t border-navy-800/60 bg-navy-900/50">
+                <div className="px-2 py-1.5 space-y-0.5 border-t border-slate-200 dark:border-navy-800/60 bg-white/70 dark:bg-navy-900/50">
                   {CREATOR_HUB_ITEMS.map((item) => renderNavItem(item, true))}
                 </div>
               )}
@@ -340,11 +346,14 @@ export function Sidebar() {
               className={cn(
                 'w-full group flex items-center justify-center rounded-xl p-2.5 transition-all',
                 isCreatorHubRoute
-                  ? 'bg-violet-600/25 text-violet-300 border border-violet-500/40'
-                  : 'text-navy-400 hover:text-white hover:bg-navy-800 border border-transparent'
+                  ? 'bg-violet-100 dark:bg-violet-600/25 text-violet-900 dark:text-violet-300 border border-violet-300 dark:border-violet-500/40'
+                  : 'text-slate-400 dark:text-navy-400 hover:text-slate-800 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 border border-transparent'
               )}
             >
-              <Palette size={17} className={isCreatorHubRoute ? 'text-violet-400' : 'text-navy-500'} />
+              <Palette
+                size={17}
+                className={isCreatorHubRoute ? 'text-violet-600 dark:text-violet-400' : 'text-slate-400 dark:text-navy-500'}
+              />
             </button>
           )}
 
@@ -352,14 +361,14 @@ export function Sidebar() {
           {WORKFLOW_ITEMS.map((item) => renderNavItem(item))}
 
           {/* Divider */}
-          <div className="my-2 border-t border-navy-800/60" />
+          <div className="my-2 border-t border-slate-200 dark:border-navy-800/60" />
 
           {/* Bottom utilities */}
           {BOTTOM_ITEMS.map((item) => renderNavItem(item))}
         </div>
 
         {/* User Card & Sign Out Footer */}
-        <div className="p-3 border-t border-navy-800/80 bg-navy-950/40">
+        <div className="p-3 border-t border-slate-200 dark:border-navy-800/80 bg-slate-50/70 dark:bg-navy-950/40">
           {!collapsed ? (
             <div className="space-y-2">
               <div className="flex items-center gap-2.5 px-2 py-1">
@@ -369,13 +378,13 @@ export function Sidebar() {
                     'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'
                   }
                   alt={authUser?.name || 'User'}
-                  className="h-8 w-8 rounded-lg object-cover border border-navy-700"
+                  className="h-8 w-8 rounded-lg object-cover border border-slate-200 dark:border-navy-700"
                 />
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-bold text-navy-200 truncate leading-tight">
+                  <p className="text-xs font-bold text-slate-800 dark:text-navy-200 truncate leading-tight">
                     {authUser?.name || 'User'}
                   </p>
-                  <p className="text-[10px] text-navy-500 truncate leading-tight mt-0.5">
+                  <p className="text-[10px] text-slate-500 dark:text-navy-500 truncate leading-tight mt-0.5">
                     {authUser?.role?.toUpperCase()} MODE
                   </p>
                 </div>
@@ -384,7 +393,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(true)}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 hover:text-rose-700 dark:hover:text-rose-300 transition-colors"
               >
                 <LogOut size={15} />
                 <span>Sign Out</span>
@@ -395,7 +404,7 @@ export function Sidebar() {
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(true)}
-                className="p-2 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors"
+                className="p-2 rounded-lg text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors"
                 title="Sign Out"
               >
                 <LogOut size={16} />
@@ -408,16 +417,16 @@ export function Sidebar() {
       {/* Sign Out Confirmation Dialog */}
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-navy-900 border border-navy-700 rounded-2xl max-w-xs w-full p-6 space-y-4 shadow-2xl text-left">
-            <h3 className="font-bold text-sm text-navy-50">Sign Out of GenAura AI?</h3>
-            <p className="text-xs text-navy-300 leading-relaxed">
+          <div className="bg-white dark:bg-navy-900 border border-slate-200 dark:border-navy-700 rounded-2xl max-w-xs w-full p-6 space-y-4 shadow-2xl text-left">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-navy-50">Sign Out of GenAura AI?</h3>
+            <p className="text-xs text-slate-600 dark:text-navy-300 leading-relaxed">
               You will return to the welcome page. Your demo session data will remain saved.
             </p>
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 type="button"
                 onClick={() => setShowLogoutConfirm(false)}
-                className="px-3 py-1.5 rounded-lg text-xs font-medium text-navy-400 hover:text-white"
+                className="px-3 py-1.5 rounded-lg text-xs font-medium text-slate-600 dark:text-navy-400 hover:text-slate-900 dark:hover:text-white"
               >
                 Cancel
               </button>
@@ -451,13 +460,9 @@ export function MobileNav() {
     (c) => c.verificationStatus === 'submitted'
   ).length;
 
-  const isCreatorHubRoute =
-    location.pathname.startsWith('/studio') ||
-    location.pathname.startsWith('/admin/verification');
-
   return (
     <>
-      <header className="lg:hidden flex items-center justify-between h-14 px-4 bg-navy-900 border-b border-navy-800 sticky top-0 z-40">
+      <header className="lg:hidden flex items-center justify-between h-14 px-4 bg-white dark:bg-navy-900 border-b border-slate-200 dark:border-navy-800 sticky top-0 z-40">
         <div
           onClick={() => navigate(ROUTES.dashboard)}
           className="flex items-center gap-2.5 cursor-pointer"
@@ -470,7 +475,7 @@ export function MobileNav() {
 
         <button
           onClick={() => setOpen(true)}
-          className="p-2 rounded-lg text-navy-400 hover:text-white hover:bg-navy-800 transition-colors"
+          className="p-2 rounded-lg text-slate-600 dark:text-navy-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800 transition-colors"
           aria-label="Open navigation"
         >
           <Menu size={20} />
@@ -483,12 +488,12 @@ export function MobileNav() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setOpen(false)}
           />
-          <div className="relative flex flex-col w-72 bg-navy-900 border-r border-navy-800 h-full shadow-2xl p-4">
-            <div className="flex items-center justify-between pb-4 border-b border-navy-800">
-              <span className="font-bold text-sm text-navy-100">GenAura Menu</span>
+          <div className="relative flex flex-col w-72 bg-white dark:bg-navy-900 border-r border-slate-200 dark:border-navy-800 h-full shadow-2xl p-4">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-navy-800">
+              <span className="font-bold text-sm text-slate-900 dark:text-navy-100">GenAura Menu</span>
               <button
                 onClick={() => setOpen(false)}
-                className="p-1 rounded-lg text-navy-400 hover:text-white"
+                className="p-1 rounded-lg text-slate-400 dark:text-navy-400 hover:text-slate-900 dark:hover:text-white"
               >
                 <X size={18} />
               </button>
@@ -497,42 +502,45 @@ export function MobileNav() {
             <nav className="flex-1 overflow-y-auto py-3 space-y-1" onClick={() => setOpen(false)}>
               <NavLink
                 to={ROUTES.dashboard}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <Home size={16} />
                 <span>Home</span>
               </NavLink>
               <NavLink
                 to={ROUTES.creators}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <Users size={16} />
                 <span>Discover Creators</span>
               </NavLink>
 
               {/* Mobile Creator Hub Group */}
-              <div className="rounded-xl border border-navy-800/80 bg-navy-950/40 overflow-hidden my-1">
+              <div className="rounded-xl border border-slate-200 dark:border-navy-800/80 bg-slate-50/80 dark:bg-navy-950/40 overflow-hidden my-1">
                 <button
                   type="button"
-                  onClick={() => setMobileHubOpen(!mobileHubOpen)}
-                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-navy-200 hover:text-white"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setMobileHubOpen(!mobileHubOpen);
+                  }}
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-semibold text-slate-750 dark:text-navy-200 hover:text-slate-900 dark:hover:text-white"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="h-6 w-6 rounded-lg bg-violet-600/30 text-violet-300 flex items-center justify-center border border-violet-500/30">
+                    <div className="h-6 w-6 rounded-lg bg-violet-100 dark:bg-violet-600/30 text-violet-700 dark:text-violet-300 flex items-center justify-center border border-violet-200 dark:border-violet-500/30">
                       <Palette size={13} />
                     </div>
                     <span>Creator Hub</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     {pendingVerificationCount > 0 && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
                         {pendingVerificationCount}
                       </span>
                     )}
                     <ChevronRight
                       size={13}
                       className={cn(
-                        'text-navy-400 transition-transform duration-200',
+                        'text-slate-400 dark:text-navy-400 transition-transform duration-200',
                         mobileHubOpen && 'rotate-90'
                       )}
                     />
@@ -540,36 +548,36 @@ export function MobileNav() {
                 </button>
 
                 {mobileHubOpen && (
-                  <div className="px-2 py-1.5 space-y-0.5 border-t border-navy-800/60 bg-navy-900/60">
+                  <div className="px-2 py-1.5 space-y-0.5 border-t border-slate-200 dark:border-navy-800/60 bg-white/70 dark:bg-navy-900/60">
                     <NavLink
                       to={ROUTES.studio}
-                      className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-300 hover:text-white"
+                      className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
                     >
                       <div className="flex items-center gap-2.5">
-                        <Palette size={14} className="text-navy-400" />
+                        <Palette size={14} className="text-slate-400 dark:text-navy-400" />
                         <span>Creator Studio</span>
                       </div>
-                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-cyan-100 dark:bg-cyan-500/20 text-cyan-800 dark:text-cyan-300 border border-cyan-300 dark:border-cyan-500/30">
                         PRO
                       </span>
                     </NavLink>
                     <NavLink
                       to={`${ROUTES.studio}?tab=coach`}
-                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-300 hover:text-white"
+                      className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
                     >
-                      <Sparkles size={14} className="text-violet-400" />
+                      <Sparkles size={14} className="text-violet-600 dark:text-violet-400" />
                       <span>AI Profile Coach</span>
                     </NavLink>
                     <NavLink
                       to={currentPersona === 'admin' ? ROUTES.adminVerification : ROUTES.studio}
-                      className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-semibold text-navy-300 hover:text-white"
+                      className="flex items-center justify-between px-3 py-1.5 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
                     >
                       <div className="flex items-center gap-2.5">
-                        <ShieldCheck size={14} className="text-amber-400" />
+                        <ShieldCheck size={14} className="text-amber-600 dark:text-amber-400" />
                         <span>Creator Verification</span>
                       </div>
                       {pendingVerificationCount > 0 && (
-                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 dark:bg-amber-500/20 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-500/40">
                           {pendingVerificationCount}
                         </span>
                       )}
@@ -577,72 +585,85 @@ export function MobileNav() {
                   </div>
                 )}
               </div>
+
               <NavLink
                 to={ROUTES.briefNew}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <FileText size={16} />
                 <span>BriefGen AI</span>
               </NavLink>
               <NavLink
                 to={ROUTES.discovery}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <Search size={16} />
                 <span>AuraMatch</span>
               </NavLink>
               <NavLink
                 to={ROUTES.shortlist}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <Bookmark size={16} />
                 <span>Shortlist</span>
               </NavLink>
               <NavLink
                 to={ROUTES.projects}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <FolderKanban size={16} />
                 <span>Collaboration Requests</span>
               </NavLink>
               <NavLink
+                to={ROUTES.deals}
+                className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
+              >
+                <div className="flex items-center gap-3">
+                  <Handshake size={16} />
+                  <span>Smart Deal Room</span>
+                </div>
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/30">
+                  PRO
+                </span>
+              </NavLink>
+              <NavLink
                 to={ROUTES.assistant}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-cyan-300 bg-cyan-500/10"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-cyan-700 dark:text-cyan-300 bg-cyan-50 dark:bg-cyan-500/10 border border-cyan-200 dark:border-cyan-500/20"
               >
                 <Bot size={16} />
                 <span>Aura Assistant</span>
               </NavLink>
               <NavLink
                 to={ROUTES.notifications}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <Bell size={16} />
                 <span>Notifications</span>
               </NavLink>
               <NavLink
                 to={ROUTES.settings}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <Settings size={16} />
                 <span>Settings</span>
               </NavLink>
               <NavLink
                 to={ROUTES.help}
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-navy-300 hover:text-white"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-semibold text-slate-700 dark:text-navy-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-navy-800"
               >
                 <HelpCircle size={16} />
                 <span>Help and Support</span>
               </NavLink>
             </nav>
 
-            <div className="pt-3 border-t border-navy-800">
+            <div className="pt-3 border-t border-slate-200 dark:border-navy-800">
               <button
                 onClick={() => {
                   logout();
                   setOpen(false);
                   navigate(ROUTES.welcome);
                 }}
-                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-400 hover:bg-rose-500/10 rounded-lg"
+                className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-lg"
               >
                 <LogOut size={16} />
                 <span>Sign Out</span>
