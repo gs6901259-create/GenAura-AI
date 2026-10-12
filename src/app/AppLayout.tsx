@@ -29,6 +29,8 @@ import {
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { DemoBanner } from '@/components/demo/DemoBanner';
+import { demoService } from '@/services/demoService';
 
 export function AppLayout() {
   const navigate = useNavigate();
@@ -66,6 +68,14 @@ export function AppLayout() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Ensure demo data is loaded if Demo Mode is active
+  useEffect(() => {
+    if (demoService.isDemoModeActive()) {
+      demoService.initializeDemoSeedIfNeeded();
+      demoService.syncStoresWithDemoData();
+    }
   }, []);
 
   // Compute breadcrumb / page title from location
@@ -113,6 +123,9 @@ export function AppLayout() {
 
       {/* Main Content Column */}
       <div className="flex flex-col flex-1 min-w-0">
+        {/* Persistent Demo Mode Banner */}
+        <DemoBanner />
+
         {/* Mobile Top Navigation */}
         <MobileNav />
 

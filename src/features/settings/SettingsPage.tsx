@@ -30,6 +30,7 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { demoService } from '@/services/demoService';
 
 export function SettingsPage() {
   const navigate = useNavigate();
@@ -805,6 +806,51 @@ export function SettingsPage() {
                   <Download size={14} />
                   <span>Export JSON</span>
                 </button>
+              </div>
+
+              {/* Demo Mode Management Box */}
+              <div className="p-4 rounded-xl bg-navy-950 border border-violet-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xs font-bold text-navy-200">Demo Mode & Simulated Storage</h3>
+                    {demoService.isDemoModeActive() && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30">
+                        Active
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-navy-400">
+                    Reset demo proposals and briefs back to canonical seed (14 creators, 8 briefs, 8 deals). Real user accounts are unaffected.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const success = demoService.resetDemoData();
+                      if (success) {
+                        setSaveSuccess('Demo data successfully restored to fresh canonical seed (14 creators, 8 briefs, 8 deals).');
+                        setTimeout(() => setSaveSuccess(null), 3500);
+                      }
+                    }}
+                    className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-rose-500/15 text-rose-300 hover:bg-rose-500 hover:text-white border border-rose-500/40 transition-all flex items-center gap-1.5"
+                  >
+                    <RefreshCw size={13} />
+                    <span>Reset Demo Data</span>
+                  </button>
+                  {demoService.isDemoModeActive() && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        demoService.exitDemo();
+                        navigate('/welcome');
+                      }}
+                      className="px-3.5 py-2 rounded-xl text-xs font-semibold bg-navy-800 text-navy-300 hover:text-white border border-navy-700 transition-all"
+                    >
+                      Exit Demo
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="flex justify-end pt-4 border-t border-navy-800">

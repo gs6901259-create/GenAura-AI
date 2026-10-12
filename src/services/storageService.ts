@@ -93,6 +93,19 @@ class StorageService {
     this.setItem(STORAGE_KEYS.COLLABORATIONS, INITIAL_COLLABORATIONS);
   }
 
+  public setDemoData(
+    creators: CreatorProfile[],
+    briefs?: CampaignBrief[],
+    shortlists?: Shortlist[],
+    collaborations?: CollaborationProject[]
+  ): void {
+    if (typeof window === 'undefined') return;
+    if (creators) this.setItem(STORAGE_KEYS.CREATORS, creators);
+    if (briefs) this.setItem(STORAGE_KEYS.BRIEFS, briefs);
+    if (shortlists) this.setItem(STORAGE_KEYS.SHORTLISTS, shortlists);
+    if (collaborations) this.setItem(STORAGE_KEYS.COLLABORATIONS, collaborations);
+  }
+
   // --- Persona & Simulation ---
   public getPersona(): AppPersona {
     return this.getItem<AppPersona>(STORAGE_KEYS.ACTIVE_PERSONA, 'brand');
